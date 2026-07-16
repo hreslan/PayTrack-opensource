@@ -2,6 +2,8 @@ import type { NextAuthConfig } from "next-auth";
 
 // Edge-safe config (no Prisma/bcrypt imports) shared by middleware and auth.ts.
 export const authConfig = {
+  // Trust the deployment host (Vercel sets the URL); also honoured via AUTH_TRUST_HOST.
+  trustHost: true,
   pages: { signIn: "/login" },
   session: { strategy: "jwt" },
   callbacks: {

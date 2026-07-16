@@ -83,7 +83,44 @@ export default function PayslipList({ rows }: { rows: PayslipRow[] }) {
         </label>
       </div>
 
-      <div className="mt-4 overflow-x-auto">
+      {/* Mobile: stacked cards so nothing is cut off on a narrow screen */}
+      <div className="mt-4 flex flex-col gap-3 sm:hidden">
+        {filtered.map((r) => (
+          <div key={r.id} className="rounded-2xl border border-ink/5 bg-surface p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div>
+                <p className="text-xs font-medium text-muted">Pay period</p>
+                <p className="mt-0.5 text-sm font-semibold text-ink">{r.period}</p>
+              </div>
+              <DeleteButton id={r.id} />
+            </div>
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+              {[
+                ["Net", r.net, true],
+                ["Gross", r.gross, false],
+                ["Tax", r.tax, false],
+                ["Super", r.superann, false],
+                ["Fuel", r.fuel, false],
+                ["Meals", r.meal, false],
+              ].map(([label, value, strong]) => (
+                <div key={label as string} className="flex items-baseline justify-between gap-2">
+                  <dt className="text-xs text-muted">{label}</dt>
+                  <dd className={`text-sm ${strong ? "font-bold" : ""} text-ink`}>{value}</dd>
+                </div>
+              ))}
+            </dl>
+          </div>
+        ))}
+        {filtered.length === 0 && (
+          <p className="py-6 text-center text-sm text-muted">
+            No payslips match your search.
+          </p>
+        )}
+      </div>
+
+      {/* Desktop: full table. `relative` keeps the sr-only cell's containing block
+          inside this scroll box so it can't push the page width out. */}
+      <div className="relative mt-4 hidden overflow-x-auto sm:block">
         <table className="w-full min-w-[760px] border-collapse">
           <thead>
             <tr className="border-b border-ink/5">

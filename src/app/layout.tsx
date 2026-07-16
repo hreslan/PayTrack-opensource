@@ -8,8 +8,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  title: "Payslip Dashboard",
+  title: "PayTrack",
   description: "Upload, confirm and track your Australian payslips",
+  icons: {
+    icon: [{ url: "/brand/paytrack-favicon.png", type: "image/png" }],
+    apple: "/brand/paytrack-favicon.png",
+  },
 };
 
 export default function RootLayout({

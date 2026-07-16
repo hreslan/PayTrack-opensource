@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
@@ -96,45 +97,55 @@ function LogoutIcon() {
   );
 }
 
+function MenuIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path d="M3 5h12M3 9h12M3 13h12" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function CloseIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path d="M4.5 4.5l9 9M13.5 4.5l-9 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
+    </svg>
+  );
+}
+
 const itemBase =
-  "flex items-center gap-3 rounded-full p-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent md:px-5 md:py-3";
+  "flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 function NavItem({
   href,
   label,
   icon,
   active,
+  onClick,
 }: {
   href: string;
   label: string;
   icon: React.ReactNode;
   active: boolean;
+  onClick?: () => void;
 }) {
   return (
     <Link
       href={href}
       aria-current={active ? "page" : undefined}
-      title={label}
+      onClick={onClick}
       className={`${itemBase} ${
         active ? "bg-ink text-white" : "text-muted hover:bg-card hover:text-ink"
       }`}
     >
       {icon}
-      <span className="hidden md:inline">{label}</span>
+      <span>{label}</span>
     </Link>
   );
 }
 
-export default function Sidebar({
-  loggedIn,
-  logoutAction,
-}: {
-  loggedIn: boolean;
-  logoutAction: () => Promise<void>;
-}) {
-  const pathname = usePathname();
-
-  const links = loggedIn
+function useNavLinks(loggedIn: boolean) {
+  return loggedIn
     ? [
         { href: "/", label: "Dashboard", icon: <DashboardIcon /> },
         { href: "/upload", label: "Upload payslip", icon: <UploadIcon /> },
@@ -147,28 +158,53 @@ export default function Sidebar({
         { href: "/login", label: "Log in", icon: <EnterIcon /> },
         { href: "/register", label: "Register", icon: <RegisterIcon /> },
       ];
+}
+
+/** Shared inner content used by both the desktop sidebar and the mobile drawer. */
+function SidebarContent({
+  loggedIn,
+  logoutAction,
+  onNavigate,
+  onClose,
+}: {
+  loggedIn: boolean;
+  logoutAction: () => Promise<void>;
+  onNavigate?: () => void;
+  onClose?: () => void;
+}) {
+  const pathname = usePathname();
+  const links = useNavLinks(loggedIn);
 
   return (
-    <nav className="sticky top-0 flex h-screen w-[72px] shrink-0 flex-col border-r border-ink/5 px-3 py-5 md:w-60 md:px-5 md:py-7">
-      <Link
-        href="/"
-        className="mb-8 flex items-center gap-3 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
-      >
-        <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-ink p-1.5">
+    <div className="flex h-full flex-col px-5 py-6 md:py-7">
+      <div className="relative mb-8 flex items-center justify-center">
+        <Link
+          href="/"
+          aria-label="PayTrack"
+          onClick={onNavigate}
+          className="flex rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
           <Image
-            src="/brand/paytrack-icon.png"
+            src="/brand/paytrack-lockup.png"
             alt="PayTrack"
-            fill
-            sizes="44px"
-            className="object-contain"
+            width={1965}
+            height={443}
+            sizes="180px"
             priority
+            className="h-8 w-auto object-contain"
           />
-        </span>
-        <span className="hidden leading-tight md:block">
-          <span className="block text-base font-bold text-ink">Payslip</span>
-          <span className="block text-base text-muted">Dashboard</span>
-        </span>
-      </Link>
+        </Link>
+        {onClose && (
+          <button
+            type="button"
+            aria-label="Close menu"
+            onClick={onClose}
+            className="absolute right-0 flex size-9 items-center justify-center rounded-full border border-ink/10 bg-card text-ink transition-colors hover:border-ink/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          >
+            <CloseIcon />
+          </button>
+        )}
+      </div>
 
       <div className="flex flex-col gap-1.5">
         {links.map((link) => (
@@ -178,6 +214,7 @@ export default function Sidebar({
             label={link.label}
             icon={link.icon}
             active={pathname === link.href}
+            onClick={onNavigate}
           />
         ))}
       </div>
@@ -186,14 +223,95 @@ export default function Sidebar({
         <form action={logoutAction} className="mt-auto">
           <button
             type="submit"
-            title="Log out"
             className={`${itemBase} w-full text-muted hover:bg-card hover:text-ink`}
           >
             <LogoutIcon />
-            <span className="hidden md:inline">Log out</span>
+            <span>Log out</span>
           </button>
         </form>
       )}
+    </div>
+  );
+}
+
+/** Desktop sidebar — always visible on md+ screens, hidden on mobile. */
+export default function Sidebar({
+  loggedIn,
+  logoutAction,
+}: {
+  loggedIn: boolean;
+  logoutAction: () => Promise<void>;
+}) {
+  return (
+    <nav className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-ink/5 md:flex">
+      <SidebarContent loggedIn={loggedIn} logoutAction={logoutAction} />
     </nav>
+  );
+}
+
+/** Mobile-only hamburger + slide-in drawer. Renders nothing on md+ screens. */
+export function MobileMenu({
+  loggedIn,
+  logoutAction,
+}: {
+  loggedIn: boolean;
+  logoutAction: () => Promise<void>;
+}) {
+  const [open, setOpen] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setOpen(false);
+    };
+    document.addEventListener("keydown", onKey);
+    document.body.style.overflow = "hidden";
+    return () => {
+      document.removeEventListener("keydown", onKey);
+      document.body.style.overflow = "";
+    };
+  }, [open]);
+
+  const close = () => setOpen(false);
+
+  return (
+    <div className="md:hidden">
+      <button
+        type="button"
+        aria-label="Open menu"
+        aria-expanded={open}
+        onClick={() => setOpen(true)}
+        className="flex size-11 items-center justify-center rounded-full border border-ink/10 bg-card text-ink transition-colors hover:border-ink/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      >
+        <MenuIcon />
+      </button>
+
+      <div
+        className={`fixed inset-0 z-50 md:hidden ${open ? "" : "pointer-events-none"}`}
+        aria-hidden={!open}
+      >
+        <div
+          onClick={close}
+          className={`absolute inset-0 bg-ink/40 transition-opacity duration-200 ${
+            open ? "opacity-100" : "opacity-0"
+          }`}
+        />
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Menu"
+          className={`absolute left-0 top-0 h-full w-72 max-w-[82%] border-r border-ink/5 bg-surface shadow-xl transition-transform duration-200 ease-out ${
+            open ? "translate-x-0" : "-translate-x-full"
+          }`}
+        >
+          <SidebarContent
+            loggedIn={loggedIn}
+            logoutAction={logoutAction}
+            onNavigate={close}
+            onClose={close}
+          />
+        </div>
+      </div>
+    </div>
   );
 }

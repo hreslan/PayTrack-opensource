@@ -44,8 +44,36 @@ const headClasses = "px-3 py-2 text-left text-xs font-medium text-muted whitespa
 
 export default function DeductionList({ rows }: { rows: DeductionRow[] }) {
   return (
-    <div className="overflow-x-auto">
-      <table className="w-full min-w-[560px] border-collapse">
+    <>
+      {/* Mobile: stacked cards so nothing is cut off on a narrow screen */}
+      <div className="flex flex-col gap-3 sm:hidden">
+        {rows.map((r) => (
+          <div key={r.id} className="rounded-2xl border border-ink/5 bg-surface p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-ink">{r.description}</p>
+                <p className="mt-0.5 text-xs text-muted">{r.date}</p>
+              </div>
+              <DeleteButton id={r.id} />
+            </div>
+            <div className="mt-3 flex items-center justify-between gap-3">
+              <Chip>{r.category}</Chip>
+              <span className="text-sm font-bold text-ink">{r.amount}</span>
+            </div>
+          </div>
+        ))}
+        {rows.length === 0 && (
+          <p className="py-6 text-center text-sm text-muted">
+            No deductions yet. Scan a receipt or add one above — they lower your
+            estimated tax.
+          </p>
+        )}
+      </div>
+
+      {/* Desktop: full table. `relative` keeps the sr-only cell's containing block
+          inside this scroll box so it can't push the page width out. */}
+      <div className="relative hidden overflow-x-auto sm:block">
+        <table className="w-full min-w-[560px] border-collapse">
         <thead>
           <tr className="border-b border-ink/5">
             <th className={headClasses}>Date</th>
@@ -81,6 +109,7 @@ export default function DeductionList({ rows }: { rows: DeductionRow[] }) {
           )}
         </tbody>
       </table>
-    </div>
+      </div>
+    </>
   );
 }

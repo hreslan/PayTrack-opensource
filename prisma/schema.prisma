@@ -5,8 +5,11 @@ generator client {
 }
 
 datasource db {
-  provider = "sqlite"
-  url      = env("DATABASE_URL")
+  provider  = "postgresql"
+  // Pooled connection for the app (Neon "-pooler" URL).
+  url       = env("DATABASE_URL")
+  // Direct connection for migrations (Neon non-pooled URL).
+  directUrl = env("DIRECT_URL")
 }
 
 model User {
