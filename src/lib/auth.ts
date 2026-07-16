@@ -3,6 +3,10 @@ import Credentials from "next-auth/providers/credentials";
 import bcrypt from "bcryptjs";
 import { prisma } from "./prisma";
 import { authConfig } from "./auth.config";
+import { clearFailures, isLockedOut, recordFailure } from "./rate-limit";
+
+// A real (random) bcrypt hash used to equalize timing for unknown emails.
+export const DUMMY_HASH = "$2b$12$F8Udfm4kubRP5ySQAiL8GeFRPC9L8R9lIxnGbRYtyh1vIqLIASQlC";
 
 export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
@@ -43,13 +47,21 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           typeof credentials?.password === "string" ? credentials.password : "";
         if (!email || !password) return null;
 
+        if (isLockedOut(`login:${email}`)) return null;
+
         const user = await prisma.user.findUnique({ where: { email } });
-        if (!user) return null;
+        // Always run one bcrypt compare so unknown emails take as long.
+        const valid = await bcrypt.compare(
+          password,
+          user?.passwordHash ?? DUMMY_HASH
+        );
+        if (!user || !valid) {
+          recordFailure(`login:${email}`);
+          return null;
+        }
         if (user.twoFactorEnabled) return null;
 
-        const valid = await bcrypt.compare(password, user.passwordHash);
-        if (!valid) return null;
-
+        clearFailures(`login:${email}`);
         return { id: user.id, email: user.email };
       },
     }),

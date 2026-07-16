@@ -5,6 +5,7 @@ import { redirect } from "next/navigation";
 import { auth } from "./auth";
 import { prisma } from "./prisma";
 import { MAX_ATTEMPTS, codesMatch, describeChannels, issueCode } from "./otp";
+import { deliveryConfigured } from "./otp-delivery";
 
 export type ProfileFormState = { error?: string; saved?: boolean } | undefined;
 
@@ -73,6 +74,15 @@ export async function start2faSetup(
     select: { id: true, email: true, phone: true },
   });
   if (!user) redirect("/login");
+
+  // In production, refuse to enable 2FA that could only deliver codes to the
+  // server console — that would be a false sense of security.
+  if (process.env.NODE_ENV === "production" && !deliveryConfigured(user.phone)) {
+    return {
+      error:
+        "Set up email delivery first (EMAIL_* settings in .env), otherwise codes would only appear in the server terminal.",
+    };
+  }
 
   const { channels } = await issueCode(user, "enable");
   return { sentInfo: describeChannels(channels, user.email) };

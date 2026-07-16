@@ -2,10 +2,16 @@
 
 import bcrypt from "bcryptjs";
 import { AuthError } from "next-auth";
-import { cookies } from "next/headers";
+import { cookies, headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { prisma } from "./prisma";
-import { signIn } from "./auth";
+import { signIn, DUMMY_HASH } from "./auth";
+import {
+  clearFailures,
+  isLockedOut,
+  rateLimit,
+  recordFailure,
+} from "./rate-limit";
 import {
   CHALLENGE_COOKIE,
   CODE_TTL_MS,
@@ -29,6 +35,13 @@ export async function registerAction(
   if (!EMAIL_RE.test(email)) return { error: "Enter a valid email address." };
   if (password.length < 8)
     return { error: "Password must be at least 8 characters." };
+  if (Buffer.byteLength(password, "utf8") > 72)
+    return { error: "Password is too long — the maximum is 72 characters." };
+
+  const ip = (await headers()).get("x-forwarded-for") ?? "local";
+  if (!rateLimit(`register:${ip}`, 5, 60 * 60 * 1000)) {
+    return { error: "Too many new accounts from this device. Try again later." };
+  }
 
   const existing = await prisma.user.findUnique({ where: { email } });
   if (existing) return { error: "An account with this email already exists." };
@@ -47,9 +60,18 @@ export async function loginAction(
   const password = String(formData.get("password") ?? "");
   if (!email || !password) return { error: "Invalid email or password." };
 
+  if (isLockedOut(`login:${email}`)) {
+    return { error: "Too many failed attempts. Try again in 15 minutes." };
+  }
+
   const user = await prisma.user.findUnique({ where: { email } });
-  const valid = user && (await bcrypt.compare(password, user.passwordHash));
-  if (!user || !valid) return { error: "Invalid email or password." };
+  // Always run one bcrypt compare so unknown emails take as long as wrong passwords.
+  const valid = await bcrypt.compare(password, user?.passwordHash ?? DUMMY_HASH);
+  if (!user || !valid) {
+    recordFailure(`login:${email}`);
+    return { error: "Invalid email or password." };
+  }
+  clearFailures(`login:${email}`);
 
   if (user.twoFactorEnabled) {
     // Two-step login: park a challenge in an httpOnly cookie and ask for the code.

@@ -37,6 +37,7 @@ export default function AuthForm({
           type="password"
           required
           minLength={8}
+          maxLength={72}
           autoComplete={mode === "login" ? "current-password" : "new-password"}
           placeholder={mode === "register" ? "At least 8 characters" : "Your password"}
           className={inputClasses}

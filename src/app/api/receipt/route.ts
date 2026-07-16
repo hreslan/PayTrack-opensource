@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import pdfParse from "pdf-parse/lib/pdf-parse.js";
+import { extractPdfText } from "@/lib/pdf-text";
 import { auth } from "@/lib/auth";
 import { parseReceipt } from "@/lib/receipt-parser";
 
@@ -45,7 +45,7 @@ export async function POST(req: Request) {
 
   let text: string;
   try {
-    text = (await pdfParse(buffer)).text;
+    text = await extractPdfText(buffer);
   } catch {
     return NextResponse.json(
       { error: "Could not read that PDF. Type the details in below instead." },

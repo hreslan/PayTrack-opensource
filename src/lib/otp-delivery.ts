@@ -13,6 +13,11 @@ function emailConfigured() {
   );
 }
 
+/** True when at least one real channel could reach this user. */
+export function deliveryConfigured(phone: string | null): boolean {
+  return emailConfigured() || (smsConfigured() && Boolean(phone));
+}
+
 function smsConfigured() {
   return Boolean(
     process.env.TWILIO_ACCOUNT_SID &&
@@ -88,6 +93,14 @@ export async function sendCode(user: Recipient, code: string): Promise<string> {
   }
 
   if (sent.length === 0) {
+    // Last-resort fallback so nobody is ever locked out of their account.
+    // Enabling 2FA without a real channel is blocked in production, so this
+    // path is normally development-only.
+    if (process.env.NODE_ENV === "production") {
+      console.warn(
+        "WARNING: 2FA code delivered to console because no email/SMS service is configured. Set EMAIL_* in .env."
+      );
+    }
     console.log(
       `\n========================================\n` +
         `  Verification code for ${user.email}: ${code}\n` +
