@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 
 function DashboardIcon() {
@@ -153,8 +154,15 @@ export default function Sidebar({
         href="/"
         className="mb-8 flex items-center gap-3 rounded-full focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <span className="flex size-11 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold text-white">
-          P$
+        <span className="relative flex size-11 shrink-0 items-center justify-center overflow-hidden rounded-xl bg-ink p-1.5">
+          <Image
+            src="/brand/paytrack-icon.png"
+            alt="PayTrack"
+            fill
+            sizes="44px"
+            className="object-contain"
+            priority
+          />
         </span>
         <span className="hidden leading-tight md:block">
           <span className="block text-base font-bold text-ink">Payslip</span>
