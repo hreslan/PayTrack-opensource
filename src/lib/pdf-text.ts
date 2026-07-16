@@ -8,14 +8,20 @@ import path from "node:path";
 const PARSE_TIMEOUT_MS = 15_000;
 
 const CHILD_SCRIPT = `
+// pdf.js logs parse warnings via console.log; keep stdout JSON-only by
+// sending all console output to stderr instead.
+const write = process.stdout.write.bind(process.stdout);
+for (const m of ["log", "info", "warn", "error"]) {
+  console[m] = (...a) => process.stderr.write(a.join(" ") + "\\n");
+}
 const chunks = [];
 process.stdin.on("data", (c) => chunks.push(c));
 process.stdin.on("end", () => {
   const pdfPath = process.argv[1];
   const pdfParse = require(pdfPath);
   pdfParse(Buffer.concat(chunks))
-    .then((d) => process.stdout.write(JSON.stringify({ text: d.text })))
-    .catch((e) => process.stdout.write(JSON.stringify({ error: String((e && e.message) || e) })));
+    .then((d) => write(JSON.stringify({ text: d.text })))
+    .catch((e) => write(JSON.stringify({ error: String((e && e.message) || e) })));
 });
 `;
 
