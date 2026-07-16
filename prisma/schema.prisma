@@ -1,0 +1,86 @@
+// Money fields are integer cents (SQLite has no Decimal support in Prisma;
+// integers stay exact and port cleanly to Postgres).
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id               String             @id @default(cuid())
+  email            String             @unique
+  passwordHash     String
+  displayName      String?
+  avatar           String? // small data-URL image (client-resized to 256px)
+  phone            String? // for SMS codes once an SMS provider is configured
+  twoFactorEnabled Boolean            @default(false)
+  createdAt        DateTime           @default(now())
+  payslips         Payslip[]
+  pending          PendingUpload[]
+  verificationCodes VerificationCode[]
+  deductions       Deduction[]
+}
+
+// A tax deduction claimed from a receipt. Only these extracted fields are
+// kept — the receipt file itself is parsed in memory and never stored.
+model Deduction {
+  id          String    @id @default(cuid())
+  userId      String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date        DateTime?
+  description String
+  category    String
+  amount      Int // cents
+  createdAt   DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model VerificationCode {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  token     String   @unique // challenge token carried in an httpOnly cookie
+  codeHash  String // sha256(code + token) — the 6-digit code is never stored
+  purpose   String // "login" | "enable"
+  channels  String // where the code was sent: "email,sms" or "console"
+  verified  Boolean  @default(false)
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+}
+
+model Payslip {
+  id             String    @id @default(cuid())
+  userId         String
+  user           User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  periodStart    DateTime?
+  periodEnd      DateTime?
+  netPay         Int?
+  grossPay       Int?
+  tax            Int?
+  fuelAllowance  Int?
+  mealAllowance  Int?
+  superannuation Int?
+  confirmedAt    DateTime  @default(now())
+  createdAt      DateTime  @default(now())
+
+  @@index([userId])
+}
+
+model PendingUpload {
+  id        String   @id @default(cuid())
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  filePath  String
+  extracted String // JSON of ExtractedFields
+  createdAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([createdAt])
+}

@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+@theme {
+  --color-canvas: #e9e7e2;
+  --color-surface: #f7f6f3;
+  --color-card: #ffffff;
+  --color-accent: #2e5be6;
+  --color-accent-soft: #d9e2fb;
+  --color-ink: #17171a;
+  --color-muted: #9b9a96;
+
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
+
+  --radius-shell: 32px;
+  --radius-card: 24px;
+}
+
+body {
+  background-color: var(--color-canvas);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+}
