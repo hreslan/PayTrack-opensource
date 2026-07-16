@@ -47,6 +47,20 @@ function ReceiptIcon() {
   );
 }
 
+function ExportIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <path
+        d="M9 2.5v8m0-8L6.5 5M9 2.5 11.5 5M3.5 10v4A1.5 1.5 0 0 0 5 15.5h8a1.5 1.5 0 0 0 1.5-1.5v-4"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </svg>
+  );
+}
+
 function ProfileIcon() {
   return (
     <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
@@ -125,6 +139,7 @@ export default function Sidebar({
         { href: "/upload", label: "Upload payslip", icon: <UploadIcon /> },
         { href: "/tax-return", label: "Tax return", icon: <TaxIcon /> },
         { href: "/deductions", label: "Deductions", icon: <ReceiptIcon /> },
+        { href: "/export", label: "Export", icon: <ExportIcon /> },
         { href: "/profile", label: "Profile", icon: <ProfileIcon /> },
       ]
     : [
