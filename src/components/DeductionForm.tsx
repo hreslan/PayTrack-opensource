@@ -23,6 +23,7 @@ export default function DeductionForm() {
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
   const [amount, setAmount] = useState("");
+  const [category, setCategory] = useState("");
 
   // after a successful save, clear the fields for the next entry
   const savedRef = useRef(false);
@@ -32,6 +33,7 @@ export default function DeductionForm() {
       setDate("");
       setDescription("");
       setAmount("");
+      setCategory("");
       setScanNote(null);
     }
     if (!state?.saved) savedRef.current = false;
@@ -54,7 +56,13 @@ export default function DeductionForm() {
       if (data.date) setDate(data.date);
       if (data.item) setDescription(data.item);
       if (data.total !== null) setAmount((data.total / 100).toFixed(2));
-      const found = [data.date && "date", data.item && "item", data.total !== null && "amount"]
+      if (data.category) setCategory(data.category);
+      const found = [
+        data.date && "date",
+        data.item && "item",
+        data.total !== null && "amount",
+        data.category && "category",
+      ]
         .filter(Boolean)
         .join(", ");
       setScanNote(
@@ -134,7 +142,13 @@ export default function DeductionForm() {
         </label>
         <label className="flex flex-col gap-1.5">
           <span className="pl-2 text-xs font-medium text-muted">Category</span>
-          <select name="category" required defaultValue="" className={inputClasses}>
+          <select
+            name="category"
+            required
+            value={category}
+            onChange={(e) => setCategory(e.target.value)}
+            className={inputClasses}
+          >
             <option value="" disabled>
               Pick a category…
             </option>

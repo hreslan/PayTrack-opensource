@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { extractPdfText } from "@/lib/pdf-text";
 import { auth } from "@/lib/auth";
-import { parseReceipt } from "@/lib/receipt-parser";
+import { smartParseReceipt } from "@/lib/smart-parse";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
 
@@ -53,5 +53,5 @@ export async function POST(req: Request) {
     );
   }
 
-  return NextResponse.json(parseReceipt(text));
+  return NextResponse.json(await smartParseReceipt(text));
 }

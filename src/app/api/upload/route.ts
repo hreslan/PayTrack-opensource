@@ -5,7 +5,7 @@ import { randomUUID } from "node:crypto";
 import { extractPdfText } from "@/lib/pdf-text";
 import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
-import { parsePayslip } from "@/lib/parser";
+import { smartParsePayslip } from "@/lib/smart-parse";
 import { UPLOAD_DIR, cleanupExpiredUploads } from "@/lib/uploads";
 
 const MAX_SIZE = 10 * 1024 * 1024; // 10 MB
@@ -55,7 +55,7 @@ export async function POST(req: Request) {
     );
   }
 
-  const extracted = parsePayslip(text);
+  const extracted = await smartParsePayslip(text);
 
   await fs.mkdir(UPLOAD_DIR, { recursive: true });
   const filePath = path.join(UPLOAD_DIR, `${randomUUID()}.pdf`);
