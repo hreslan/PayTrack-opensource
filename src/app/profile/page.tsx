@@ -5,6 +5,7 @@ import AppShell from "@/components/AppShell";
 import Card from "@/components/Card";
 import ProfileForm from "@/components/ProfileForm";
 import TwoFactorCard from "@/components/TwoFactorCard";
+import DeleteAccountCard from "@/components/DeleteAccountCard";
 
 export default async function ProfilePage() {
   const session = await auth();
@@ -38,6 +39,7 @@ export default async function ProfilePage() {
           />
         </Card>
         <TwoFactorCard enabled={user.twoFactorEnabled} />
+        <DeleteAccountCard />
       </div>
     </AppShell>
   );

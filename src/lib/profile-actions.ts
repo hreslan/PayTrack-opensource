@@ -1,11 +1,13 @@
 "use server";
 
+import bcrypt from "bcryptjs";
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-import { auth } from "./auth";
+import { auth, signOut } from "./auth";
 import { prisma } from "./prisma";
 import { MAX_ATTEMPTS, codesMatch, describeChannels, issueCode } from "./otp";
 import { deliveryConfigured } from "./otp-delivery";
+import { removeFileQuietly } from "./uploads";
 
 export type ProfileFormState = { error?: string; saved?: boolean } | undefined;
 
@@ -125,6 +127,36 @@ export async function confirm2faSetup(
 
   revalidatePath("/profile");
   return { enabled: true };
+}
+
+export type DeleteAccountState = { error: string } | undefined;
+
+export async function deleteAccount(
+  _prev: DeleteAccountState,
+  formData: FormData
+): Promise<DeleteAccountState> {
+  const session = await auth();
+  if (!session?.user?.id) redirect("/login");
+
+  const password = String(formData.get("password") ?? "");
+  const user = await prisma.user.findUnique({ where: { id: session.user.id } });
+  if (!user) redirect("/login");
+
+  // Require the password again — deletion is permanent and irreversible.
+  const valid = await bcrypt.compare(password, user.passwordHash);
+  if (!valid) return { error: "That password is not correct." };
+
+  // Remove any temp PDF files still on disk before the rows cascade away.
+  const pending = await prisma.pendingUpload.findMany({
+    where: { userId: user.id },
+    select: { filePath: true },
+  });
+  for (const p of pending) await removeFileQuietly(p.filePath);
+
+  // Cascades to payslips, deductions, pending uploads and verification codes.
+  await prisma.user.delete({ where: { id: user.id } });
+
+  await signOut({ redirectTo: "/register" });
 }
 
 export async function disable2fa(): Promise<void> {

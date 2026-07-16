@@ -8,6 +8,8 @@
   --color-accent-soft: #d9e2fb;
   --color-ink: #17171a;
   --color-muted: #9b9a96;
+  --color-danger: #c8402f;
+  --color-danger-soft: #f6d5cf;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 

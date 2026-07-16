@@ -1,11 +1,12 @@
 import Link from "next/link";
 
-type Variant = "primary" | "secondary" | "tertiary";
+type Variant = "primary" | "secondary" | "tertiary" | "danger";
 
 const variantClasses: Record<Variant, string> = {
   primary: "bg-accent text-white hover:bg-accent/90",
   secondary: "bg-ink text-white hover:bg-ink/85",
   tertiary: "bg-card text-ink border border-ink/10 hover:border-ink/30",
+  danger: "bg-danger text-white hover:bg-danger/90",
 };
 
 const baseClasses =
