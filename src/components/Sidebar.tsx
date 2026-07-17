@@ -219,17 +219,27 @@ function SidebarContent({
         ))}
       </div>
 
-      {loggedIn && (
-        <form action={logoutAction} className="mt-auto">
-          <button
-            type="submit"
-            className={`${itemBase} w-full text-muted hover:bg-card hover:text-ink`}
-          >
-            <LogoutIcon />
-            <span>Log out</span>
-          </button>
-        </form>
-      )}
+      <div className="mt-auto flex flex-col gap-1.5 pt-6">
+        {loggedIn && (
+          <form action={logoutAction}>
+            <button
+              type="submit"
+              className={`${itemBase} w-full text-muted hover:bg-card hover:text-ink`}
+            >
+              <LogoutIcon />
+              <span>Log out</span>
+            </button>
+          </form>
+        )}
+        <Link
+          href="/privacy"
+          aria-current={pathname === "/privacy" ? "page" : undefined}
+          onClick={onNavigate}
+          className="px-4 py-1 text-xs font-medium text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        >
+          Privacy &amp; your data
+        </Link>
+      </div>
     </div>
   );
 }
