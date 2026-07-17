@@ -5,7 +5,7 @@
 import { parsePayslip, type AmountField, type ExtractedFields } from "./parser.ts";
 import { parseReceipt, type ReceiptFields } from "./receipt-parser.ts";
 import { DEDUCTION_CATEGORIES } from "./deduction-categories.ts";
-import { callDeepSeekJson, deepseekConfigured } from "./deepseek.ts";
+import { callLlmJson, llmConfigured } from "./llm.ts";
 
 // ---- shared value normalizers (pure, unit-tested) ----
 
@@ -105,12 +105,15 @@ export function mergePayslip(
 
 export async function smartParsePayslip(text: string): Promise<ExtractedFields> {
   const base = parsePayslip(text);
-  if (!deepseekConfigured()) return base;
+  if (!llmConfigured()) return base;
   try {
-    const raw = await callDeepSeekJson(PAYSLIP_SYSTEM, payslipPrompt(text));
+    const raw = await callLlmJson(PAYSLIP_SYSTEM, payslipPrompt(text));
     return mergePayslip(base, normalizeLlmPayslip(raw));
   } catch (err) {
-    console.error("DeepSeek payslip parse failed, using pattern parser:", err);
+    console.error(
+      "LLM payslip parse failed, using pattern parser:",
+      err instanceof Error ? err.message : err
+    );
     return base;
   }
 }
@@ -159,9 +162,9 @@ export function normalizeLlmReceipt(raw: unknown): SmartReceiptFields {
 
 export async function smartParseReceipt(text: string): Promise<SmartReceiptFields> {
   const base = parseReceipt(text);
-  if (!deepseekConfigured()) return { ...base, category: null };
+  if (!llmConfigured()) return { ...base, category: null };
   try {
-    const raw = await callDeepSeekJson(RECEIPT_SYSTEM, receiptPrompt(text));
+    const raw = await callLlmJson(RECEIPT_SYSTEM, receiptPrompt(text));
     const llm = normalizeLlmReceipt(raw);
     return {
       date: llm.date ?? base.date,
@@ -170,7 +173,10 @@ export async function smartParseReceipt(text: string): Promise<SmartReceiptField
       category: llm.category,
     };
   } catch (err) {
-    console.error("DeepSeek receipt parse failed, using pattern parser:", err);
+    console.error(
+      "LLM receipt parse failed, using pattern parser:",
+      err instanceof Error ? err.message : err
+    );
     return { ...base, category: null };
   }
 }

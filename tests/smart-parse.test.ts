@@ -13,12 +13,12 @@ import { FIXTURE_TABULAR } from "./fixtures.ts";
 const realFetch = globalThis.fetch;
 afterEach(() => {
   globalThis.fetch = realFetch;
-  delete process.env.DEEPSEEK_API_KEY;
+  delete process.env.GEMINI_API_KEY;
 });
 
-/** Make DeepSeek "return" a given JSON object via a mocked fetch. */
-function mockDeepSeek(obj: unknown) {
-  process.env.DEEPSEEK_API_KEY = "test-key";
+/** Make the LLM "return" a given JSON object via a mocked fetch. */
+function mockLlm(obj: unknown) {
+  process.env.GEMINI_API_KEY = "test-key";
   globalThis.fetch = (async () =>
     new Response(
       JSON.stringify({ choices: [{ message: { content: JSON.stringify(obj) } }] }),
@@ -76,8 +76,8 @@ test("smartParsePayslip falls back to the pattern parser when no key is set", as
   assert.deepEqual(r, parsePayslip(FIXTURE_TABULAR));
 });
 
-test("smartParsePayslip uses DeepSeek output when configured", async () => {
-  mockDeepSeek({
+test("smartParsePayslip uses LLM output when configured", async () => {
+  mockLlm({
     periodStart: "2026-01-01",
     periodEnd: "2026-01-14",
     grossPay: 5000,
@@ -94,16 +94,16 @@ test("smartParsePayslip uses DeepSeek output when configured", async () => {
   assert.equal(r.periodEnd, "2026-01-14");
 });
 
-test("smartParseReceipt returns a suggested category from DeepSeek", async () => {
-  mockDeepSeek({ date: "2026-07-03", total: 174.95, item: "TradeGear Workwear", category: "Work uniform" });
+test("smartParseReceipt returns a suggested category from the LLM", async () => {
+  mockLlm({ date: "2026-07-03", total: 174.95, item: "TradeGear Workwear", category: "Work uniform" });
   const r = await smartParseReceipt("receipt text");
   assert.equal(r.total, 17495);
   assert.equal(r.item, "TradeGear Workwear");
   assert.equal(r.category, "Work uniform");
 });
 
-test("smartParseReceipt survives a DeepSeek failure by using regex", async () => {
-  process.env.DEEPSEEK_API_KEY = "test-key";
+test("smartParseReceipt survives an LLM failure by using regex", async () => {
+  process.env.GEMINI_API_KEY = "test-key";
   globalThis.fetch = (async () => new Response("boom", { status: 500 })) as typeof fetch;
   const r = await smartParseReceipt("Cafe\nTOTAL $12.50");
   assert.equal(r.total, 1250);
