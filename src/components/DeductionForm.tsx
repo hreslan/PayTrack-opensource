@@ -2,8 +2,17 @@
 
 import { useActionState, useEffect, useRef, useState } from "react";
 import PillButton from "./PillButton";
+import UploadProgress, { useUploadProgress } from "./UploadProgress";
 import { addDeduction, type DeductionFormState } from "@/lib/deduction-actions";
 import { DEDUCTION_CATEGORIES } from "@/lib/deduction-categories";
+
+type ReceiptScan = {
+  date: string | null;
+  item: string | null;
+  total: number | null;
+  category: string | null;
+  error?: string;
+};
 
 const inputClasses =
   "w-full rounded-full border border-ink/10 bg-card px-5 py-3 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent";
@@ -19,6 +28,7 @@ export default function DeductionForm() {
   const [dragOver, setDragOver] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [scanNote, setScanNote] = useState<string | null>(null);
+  const { progress, upload, reset } = useUploadProgress();
   // controlled values so a scanned receipt can prefill the fields
   const [date, setDate] = useState("");
   const [description, setDescription] = useState("");
@@ -47,9 +57,12 @@ export default function DeductionForm() {
     try {
       const body = new FormData();
       body.append("file", file);
-      const res = await fetch("/api/receipt", { method: "POST", body });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) {
+      const res = await upload<ReceiptScan>("/api/receipt", body, {
+        uploadLabel: "Uploading receipt…",
+        processingLabel: "Reading receipt…",
+      });
+      const data = res.data;
+      if (!res.ok || !data) {
         setScanError(data?.error ?? "Could not read that receipt.");
         return;
       }
@@ -74,6 +87,7 @@ export default function DeductionForm() {
       setScanError("Could not read that receipt. Type the details in instead.");
     } finally {
       setScanning(false);
+      reset();
     }
   }
 
@@ -118,6 +132,12 @@ export default function DeductionForm() {
           }}
         />
       </div>
+
+      {progress && (
+        <div className="px-2">
+          <UploadProgress percent={progress.percent} label={progress.label} />
+        </div>
+      )}
 
       {scanNote && <p className="pl-2 text-sm text-ink">{scanNote}</p>}
       {scanError && (

@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import PillButton from "./PillButton";
+import UploadProgress, { useUploadProgress } from "./UploadProgress";
 
 const MAX_SIZE = 10 * 1024 * 1024;
 
@@ -12,6 +13,7 @@ export default function UploadForm() {
   const [dragOver, setDragOver] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
+  const { progress, upload, reset } = useUploadProgress();
 
   function takeFile(f: File | undefined) {
     if (!f) return;
@@ -40,14 +42,17 @@ export default function UploadForm() {
     try {
       const body = new FormData();
       body.append("file", file);
-      const res = await fetch("/api/upload", { method: "POST", body });
-      const data = await res.json().catch(() => null);
-      if (!res.ok) {
-        setError(data?.error ?? "Upload failed. Please try again.");
+      const res = await upload<{ id?: string; error?: string }>("/api/upload", body, {
+        uploadLabel: "Uploading your payslip…",
+        processingLabel: "Reading your payslip…",
+      });
+      if (!res.ok || !res.data?.id) {
+        setError(res.data?.error ?? "Upload failed. Please try again.");
+        reset();
         setBusy(false);
         return;
       }
-      router.push(`/confirm/${data.id}`);
+      router.push(`/confirm/${res.data.id}`);
     } catch {
       setError("Upload failed. Please try again.");
       setBusy(false);
@@ -99,6 +104,8 @@ export default function UploadForm() {
         />
       </label>
 
+      {progress && <UploadProgress percent={progress.percent} label={progress.label} />}
+
       {error && (
         <p role="alert" className="text-sm font-medium text-accent">
           {error}
@@ -107,7 +114,7 @@ export default function UploadForm() {
 
       <div className="flex flex-wrap gap-3">
         <PillButton type="submit" disabled={busy} arrow>
-          {busy ? "Reading your payslip…" : "Upload payslip"}
+          {busy ? "Uploading…" : "Upload payslip"}
         </PillButton>
         <PillButton variant="tertiary" href="/">
           Back to dashboard
