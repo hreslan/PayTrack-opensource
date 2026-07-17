@@ -1,14 +1,10 @@
 import fs from "node:fs/promises";
-import os from "node:os";
 import path from "node:path";
 import { prisma } from "./prisma";
 
-// Temp storage for uploaded PDFs, in the OS temp dir so it works on serverless
-// hosts (e.g. Vercel, where only /tmp is writable). Files here live at most
-// 1 hour: they are removed on confirm, cancel, or expiry cleanup. The confirm
-// step reads the extracted fields from the DB, not the file, so it is safe if a
-// temp file does not survive between serverless invocations.
-export const UPLOAD_DIR = path.join(os.tmpdir(), "paytrack-uploads");
+// Temp storage for uploaded PDFs, outside public/. Files here live at most
+// 1 hour: they are removed on confirm, cancel, or expiry cleanup.
+export const UPLOAD_DIR = path.join(process.cwd(), ".uploads");
 
 export async function removeFileQuietly(filePath: string) {
   try {
