@@ -1,7 +1,6 @@
 import { auth } from "@/lib/auth";
 import { payslipsCsv } from "@/lib/csv";
-import { availableYears, loadExport, parseScope } from "@/lib/export-data";
-import { fyLabel } from "@/lib/tax";
+import { availableYears, loadExport, parseScope, scopeFilenameSuffix } from "@/lib/export-data";
 
 export async function GET(req: Request) {
   const session = await auth();
@@ -14,7 +13,7 @@ export async function GET(req: Request) {
   const scope = parseScope(url.searchParams.get("fy") ?? undefined, years);
   const { payslips } = await loadExport(session.user.id, scope);
 
-  const suffix = scope === "all" ? "all-years" : `FY${fyLabel(scope)}`;
+  const suffix = scopeFilenameSuffix(scope);
   return new Response(payslipsCsv(payslips), {
     headers: {
       "Content-Type": "text/csv; charset=utf-8",

@@ -1,5 +1,5 @@
 import { prisma } from "./prisma";
-import { fyOf } from "./tax";
+import { fyLabel, fyOf } from "./tax";
 
 // Shared loader for the export pages and CSV routes. `fy` is a financial-year
 // start year, or "all" for everything.
@@ -10,6 +10,15 @@ export function parseScope(raw: string | undefined, years: number[]): ExportScop
   if (raw === "all") return "all";
   const n = Number(raw);
   return years.includes(n) ? n : (years[0] ?? fyOf(new Date()));
+}
+
+/**
+ * ASCII-only filename fragment for a scope, e.g. "FY2026-27" or "all-years".
+ * `fyLabel` uses an en dash for display, but HTTP header values must stay
+ * within Latin-1 — a non-Latin1 character in Content-Disposition throws.
+ */
+export function scopeFilenameSuffix(scope: ExportScope): string {
+  return scope === "all" ? "all-years" : `FY${fyLabel(scope).replace("–", "-")}`;
 }
 
 export async function loadExport(userId: string, scope: ExportScope) {
