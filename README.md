@@ -47,7 +47,7 @@ Requires Node.js 20 or later.
 
 ```bash
 git clone <this-repo-url>
-cd paytrack
+cd paytrack-opensource
 npm install
 cp .env.example .env   # fill in AUTH_SECRET at minimum; see comments in the file
 npx prisma migrate deploy
