@@ -73,7 +73,7 @@ export default function MonthlyBarChart({
                         {formatMoney(d.value)}
                       </span>
                     )}
-                    {/* Hit target spans the full column, not just the mark. */}
+                    {/* The tooltip trigger is the whole column, wider than the bar itself. */}
                     <div className="pointer-events-none absolute bottom-full left-1/2 z-10 mb-1 hidden -translate-x-1/2 whitespace-nowrap rounded-control border border-line bg-surface px-2 py-1 text-xs shadow-raised group-hover:block">
                       <span className="font-medium text-ink">{d.full}</span>
                       <span className="ml-2 font-semibold tabular-nums text-ink">

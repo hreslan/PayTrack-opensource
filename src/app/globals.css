@@ -21,7 +21,8 @@
   --color-on-accent: #ffffff;
 
   /* Chart marks are tuned per theme against the card surface and validated
-     for lightness band, chroma and contrast — not reused from the UI accent. */
+     for lightness band, chroma and contrast. They are not reused from the
+     UI accent. */
   --color-chart: #2a4fc4;
   --color-chart-soft: #dfe5fa;
 
