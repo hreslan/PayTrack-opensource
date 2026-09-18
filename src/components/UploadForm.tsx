@@ -2,8 +2,9 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import PillButton from "./PillButton";
+import Button from "./Button";
 import UploadProgress, { useUploadProgress } from "./UploadProgress";
+import { errorClasses } from "./ui";
 
 const MAX_SIZE = 10 * 1024 * 1024;
 
@@ -73,10 +74,10 @@ export default function UploadForm() {
           setDragOver(false);
           takeFile(e.dataTransfer.files?.[0]);
         }}
-        className={`flex cursor-pointer flex-col items-center gap-2 rounded-card border border-dashed px-6 py-10 text-center transition-colors focus-within:border-accent ${
+        className={`flex cursor-pointer flex-col items-center gap-2 rounded-control border border-dashed px-6 py-10 text-center transition-colors focus-within:border-accent ${
           dragOver
-            ? "border-accent bg-accent-soft/40"
-            : "border-ink/20 bg-surface hover:border-accent"
+            ? "border-accent bg-accent-soft"
+            : "border-line-strong bg-inset hover:border-accent"
         }`}
       >
         <span className="flex size-12 items-center justify-center rounded-full bg-accent-soft text-accent">
@@ -107,18 +108,18 @@ export default function UploadForm() {
       {progress && <UploadProgress percent={progress.percent} label={progress.label} />}
 
       {error && (
-        <p role="alert" className="text-sm font-medium text-accent">
+        <p role="alert" className={errorClasses}>
           {error}
         </p>
       )}
 
       <div className="flex flex-wrap gap-3">
-        <PillButton type="submit" disabled={busy} arrow>
+        <Button type="submit" disabled={busy}>
           {busy ? "Uploading…" : "Upload payslip"}
-        </PillButton>
-        <PillButton variant="tertiary" href="/">
+        </Button>
+        <Button variant="tertiary" href="/">
           Back to dashboard
-        </PillButton>
+        </Button>
       </div>
     </form>
   );

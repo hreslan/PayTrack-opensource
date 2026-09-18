@@ -1,12 +1,11 @@
 "use client";
 
 import { useActionState } from "react";
-import PillButton from "./PillButton";
+import Button from "./Button";
 import Chip from "./Chip";
 import type { ConfirmFormState } from "@/lib/payslip-actions";
+import { errorClasses, fieldClasses, inputClasses } from "./ui";
 
-const inputClasses =
-  "w-full rounded-full border border-ink/10 bg-card px-5 py-3 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent";
 
 export type ConfirmField = {
   name: string;
@@ -34,7 +33,7 @@ export default function ConfirmForm({
     <form action={formAction} className="flex flex-col gap-5">
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
         {fields.map((field) => (
-          <label key={field.name} className="flex flex-col gap-1.5">
+          <label key={field.name} className={fieldClasses}>
             <span className="flex items-center justify-between gap-2 pl-2">
               <span className="text-xs font-medium text-muted">{field.title}</span>
               {field.matchedLabel ? (
@@ -58,16 +57,16 @@ export default function ConfirmForm({
       </div>
 
       {state?.error && (
-        <p role="alert" className="pl-2 text-sm font-medium text-accent">
+        <p role="alert" className={errorClasses}>
           {state.error}
         </p>
       )}
 
       <div className="flex flex-wrap gap-3">
-        <PillButton type="submit" disabled={pending} arrow>
+        <Button type="submit" disabled={pending}>
           {pending ? "Saving…" : "Confirm & Save"}
-        </PillButton>
-        <PillButton
+        </Button>
+        <Button
           variant="secondary"
           type="submit"
           formAction={cancelAction}
@@ -75,7 +74,7 @@ export default function ConfirmForm({
           disabled={pending}
         >
           Cancel
-        </PillButton>
+        </Button>
       </div>
       <p className="text-xs text-muted">
         Confirm &amp; Save keeps only these numbers and permanently deletes the

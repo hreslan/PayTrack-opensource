@@ -18,6 +18,11 @@ const csp = [
 
 const nextConfig: NextConfig = {
   serverExternalPackages: ["pdf-parse"],
+  experimental: {
+    // addDeduction (a Server Action) can carry a receipt PDF up to 10 MB
+    // when the user chooses to keep a copy; the default limit is 1 MB.
+    serverActions: { bodySizeLimit: "10mb" },
+  },
   async headers() {
     return [
       {

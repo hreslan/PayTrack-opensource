@@ -1,62 +1,43 @@
-import Card from "./Card";
+type Tone = "neutral" | "positive" | "negative";
 
-function ProgressRing({ percent }: { percent: number }) {
-  const r = 26;
-  const c = 2 * Math.PI * r;
-  const clamped = Math.max(0, Math.min(100, percent));
-  return (
-    <svg width="64" height="64" viewBox="0 0 64 64" aria-hidden="true">
-      <circle cx="32" cy="32" r={r} fill="none" stroke="var(--color-accent-soft)" strokeWidth="8" />
-      <circle
-        cx="32"
-        cy="32"
-        r={r}
-        fill="none"
-        stroke="var(--color-accent)"
-        strokeWidth="8"
-        strokeLinecap="round"
-        strokeDasharray={`${(clamped / 100) * c} ${c}`}
-        transform="rotate(-90 32 32)"
-      />
-      <text
-        x="32"
-        y="36"
-        textAnchor="middle"
-        fontSize="13"
-        fontWeight="700"
-        fill="var(--color-ink)"
-      >
-        {Math.round(clamped)}%
-      </text>
-    </svg>
-  );
-}
+const toneClasses: Record<Tone, string> = {
+  neutral: "text-ink",
+  positive: "text-positive",
+  negative: "text-negative",
+};
 
 export default function StatCard({
   label,
   value,
-  ringPercent,
+  sub,
+  tone = "neutral",
+  meterPercent,
 }: {
   label: string;
   value: string;
-  ringPercent?: number;
+  sub?: string;
+  tone?: Tone;
+  meterPercent?: number;
 }) {
   return (
-    <Card className="flex items-center justify-between gap-4">
-      <div>
-        <p className="text-xs font-medium text-muted">{label}</p>
-        <p className="mt-2 text-3xl font-bold tracking-tight text-ink">
-          {value.startsWith("$") ? (
-            <>
-              <span className="font-medium text-ink/60">$</span>
-              {value.slice(1)}
-            </>
-          ) : (
-            value
-          )}
-        </p>
-      </div>
-      {ringPercent !== undefined && <ProgressRing percent={ringPercent} />}
-    </Card>
+    <div className="flex flex-col rounded-card border border-line bg-card p-4 shadow-card">
+      <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+        {label}
+      </p>
+      <p
+        className={`mt-2 text-2xl font-semibold tracking-tight tabular-nums ${toneClasses[tone]}`}
+      >
+        {value}
+      </p>
+      {sub && <p className="mt-2 text-xs text-muted">{sub}</p>}
+      {meterPercent !== undefined && (
+        <div className="mt-3 h-1 overflow-hidden rounded-full bg-inset">
+          <div
+            className="h-full rounded-full bg-accent"
+            style={{ width: `${Math.max(0, Math.min(100, meterPercent))}%` }}
+          />
+        </div>
+      )}
+    </div>
   );
 }

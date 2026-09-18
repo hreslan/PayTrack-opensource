@@ -51,7 +51,7 @@ export async function issueCode(
   return { token, channels };
 }
 
-/** "reslan.haidar2006@gmail.com" → "re•••@gmail.com" */
+/** "jane.doe@example.com" → "ja•••@example.com" */
 export function maskEmail(email: string): string {
   const [local, domain] = email.split("@");
   return `${local.slice(0, 2)}•••@${domain}`;

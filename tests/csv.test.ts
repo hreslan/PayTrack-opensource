@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { toCsv, payslipsCsv, deductionsCsv } from "../src/lib/csv.ts";
+import { toCsv, payslipsCsv, deductionsCsv, otherIncomeCsv } from "../src/lib/csv.ts";
 
 const BOM = "﻿";
 
@@ -49,4 +49,27 @@ test("deductionsCsv escapes a description containing a comma", () => {
   ]);
   const dataRow = out.trim().split("\r\n")[1];
   assert.equal(dataRow, '2026-07-08,"Boots, steel cap",Work uniform,129.95');
+});
+
+test("otherIncomeCsv writes a Source/Tax withheld header, leaves missing date and tax blank", () => {
+  const out = otherIncomeCsv([
+    {
+      date: new Date("2026-07-01T00:00:00Z"),
+      description: "Savings account interest",
+      category: "Bank interest",
+      amount: 4312,
+      tax: null,
+    },
+    {
+      date: null,
+      description: "Weekend job",
+      category: "Freelance / ABN work",
+      amount: 250000,
+      tax: 47500,
+    },
+  ]);
+  assert.ok(out.startsWith(`${BOM}Date,Source,Category,Amount,Tax withheld`));
+  const [, first, second] = out.trim().split("\r\n");
+  assert.equal(first, "2026-07-01,Savings account interest,Bank interest,43.12,");
+  assert.equal(second, ",Weekend job,Freelance / ABN work,2500.00,475.00");
 });

@@ -8,7 +8,7 @@ import {
   cancelLoginAction,
 } from "@/lib/auth-actions";
 import AppShell from "@/components/AppShell";
-import Card from "@/components/Card";
+import AuthCard from "@/components/AuthCard";
 import VerifyForm from "@/components/VerifyForm";
 
 export default async function VerifyPage() {
@@ -26,22 +26,16 @@ export default async function VerifyPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-md py-10">
-        <Card>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">
-            Two-step verification
-          </h1>
-          <p className="mt-1 mb-6 text-sm text-muted">
-            {describeChannels(record.channels, record.user.email)} It expires in
-            10 minutes.
-          </p>
-          <VerifyForm
-            verifyAction={verifyLoginAction}
-            resendAction={resendLoginCodeAction}
-            cancelAction={cancelLoginAction}
-          />
-        </Card>
-      </div>
+      <AuthCard
+        title="Two-step verification"
+        description={`${describeChannels(record.channels, record.user.email)} It expires in 10 minutes.`}
+      >
+        <VerifyForm
+          verifyAction={verifyLoginAction}
+          resendAction={resendLoginCodeAction}
+          cancelAction={cancelLoginAction}
+        />
+      </AuthCard>
     </AppShell>
   );
 }

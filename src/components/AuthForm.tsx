@@ -2,11 +2,9 @@
 
 import { useActionState } from "react";
 import Link from "next/link";
-import PillButton from "./PillButton";
+import Button from "./Button";
 import type { AuthFormState } from "@/lib/auth-actions";
-
-export const inputClasses =
-  "w-full rounded-full border border-ink/10 bg-card px-5 py-3 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent";
+import { errorClasses, fieldClasses, inputClasses, labelClasses } from "./ui";
 
 export default function AuthForm({
   mode,
@@ -19,8 +17,8 @@ export default function AuthForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1.5">
-        <span className="pl-2 text-xs font-medium text-muted">Email</span>
+      <label className={fieldClasses}>
+        <span className={labelClasses}>Email</span>
         <input
           name="email"
           type="email"
@@ -30,8 +28,8 @@ export default function AuthForm({
           className={inputClasses}
         />
       </label>
-      <label className="flex flex-col gap-1.5">
-        <span className="pl-2 text-xs font-medium text-muted">Password</span>
+      <label className={fieldClasses}>
+        <span className={labelClasses}>Password</span>
         <input
           name="password"
           type="password"
@@ -45,18 +43,18 @@ export default function AuthForm({
       </label>
 
       {state?.error && (
-        <p role="alert" className="pl-2 text-sm font-medium text-accent">
+        <p role="alert" className={errorClasses}>
           {state.error}
         </p>
       )}
 
-      <PillButton type="submit" disabled={pending} arrow className="mt-2">
+      <Button type="submit" disabled={pending} className="mt-2">
         {pending
           ? "Please wait…"
           : mode === "login"
             ? "Log in"
             : "Create account"}
-      </PillButton>
+      </Button>
 
       <p className="text-center text-sm text-muted">
         {mode === "login" ? (

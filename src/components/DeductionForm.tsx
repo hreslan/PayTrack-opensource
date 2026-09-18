@@ -1,10 +1,11 @@
 "use client";
 
 import { useActionState, useEffect, useRef, useState } from "react";
-import PillButton from "./PillButton";
+import Button from "./Button";
 import UploadProgress, { useUploadProgress } from "./UploadProgress";
 import { addDeduction, type DeductionFormState } from "@/lib/deduction-actions";
 import { DEDUCTION_CATEGORIES } from "@/lib/deduction-categories";
+import { errorClasses, fieldClasses, inputClasses, labelClasses } from "./ui";
 
 type ReceiptScan = {
   date: string | null;
@@ -14,8 +15,6 @@ type ReceiptScan = {
   error?: string;
 };
 
-const inputClasses =
-  "w-full rounded-full border border-ink/10 bg-card px-5 py-3 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent";
 
 export default function DeductionForm() {
   const [state, formAction, pending] = useActionState<DeductionFormState, FormData>(
@@ -28,6 +27,8 @@ export default function DeductionForm() {
   const [dragOver, setDragOver] = useState(false);
   const [scanError, setScanError] = useState<string | null>(null);
   const [scanNote, setScanNote] = useState<string | null>(null);
+  const [receiptFileName, setReceiptFileName] = useState<string | null>(null);
+  const [keepReceipt, setKeepReceipt] = useState(false);
   const { progress, upload, reset } = useUploadProgress();
   // controlled values so a scanned receipt can prefill the fields
   const [date, setDate] = useState("");
@@ -45,9 +46,24 @@ export default function DeductionForm() {
       setAmount("");
       setCategory("");
       setScanNote(null);
+      setReceiptFileName(null);
+      setKeepReceipt(false);
+      if (fileRef.current) fileRef.current.value = "";
     }
     if (!state?.saved) savedRef.current = false;
   }, [state]);
+
+  // Drag-dropped files aren't tied to the file input's own FileList, so sync
+  // them in manually — this is what makes the file part of the form
+  // submission if "Keep a copy" ends up checked.
+  function attachDroppedFile(file: File) {
+    if (fileRef.current) {
+      const dt = new DataTransfer();
+      dt.items.add(file);
+      fileRef.current.files = dt.files;
+    }
+    setReceiptFileName(file.name);
+  }
 
   async function scanFile(file: File | undefined) {
     if (!file) return;
@@ -102,36 +118,55 @@ export default function DeductionForm() {
         onDrop={(e) => {
           e.preventDefault();
           setDragOver(false);
-          scanFile(e.dataTransfer.files?.[0]);
+          const file = e.dataTransfer.files?.[0];
+          if (file) attachDroppedFile(file);
+          scanFile(file);
         }}
-        className={`flex flex-wrap items-center gap-3 rounded-card border border-dashed px-4 py-4 transition-colors ${
-          dragOver ? "border-accent bg-accent-soft/40" : "border-ink/20 bg-surface"
+        className={`flex flex-wrap items-center gap-3 rounded-control border border-dashed px-4 py-4 transition-colors ${
+          dragOver ? "border-accent bg-accent-soft" : "border-line-strong bg-inset"
         }`}
       >
-        <PillButton
+        <Button
           type="button"
           variant="tertiary"
           disabled={scanning}
           onClick={() => fileRef.current?.click()}
         >
           {scanning ? "Reading receipt…" : "Scan a receipt PDF"}
-        </PillButton>
+        </Button>
         <span className="text-xs text-muted">
-          …or drag the receipt here. It&apos;s read and thrown away — only the
-          details below are saved.
+          …or drag the receipt here. We read it to fill in the fields below,
+          then discard it — unless you keep a copy.
         </span>
         <input
           ref={fileRef}
+          name="receipt"
           type="file"
           accept=".pdf,application/pdf"
           className="sr-only"
           aria-label="Scan a receipt PDF"
           onChange={(e) => {
-            scanFile(e.target.files?.[0]);
-            e.target.value = "";
+            const file = e.target.files?.[0];
+            if (file) setReceiptFileName(file.name);
+            scanFile(file);
           }}
         />
       </div>
+
+      {receiptFileName && (
+        <label className="flex items-center gap-2 pl-2 text-sm text-ink">
+          <input
+            type="checkbox"
+            name="keepReceipt"
+            value="1"
+            checked={keepReceipt}
+            onChange={(e) => setKeepReceipt(e.target.checked)}
+            className="size-4 rounded border-line-strong accent-accent"
+          />
+          Keep a copy of &ldquo;{receiptFileName}&rdquo; so I can download it
+          later
+        </label>
+      )}
 
       {progress && (
         <div className="px-2">
@@ -141,14 +176,14 @@ export default function DeductionForm() {
 
       {scanNote && <p className="pl-2 text-sm text-ink">{scanNote}</p>}
       {scanError && (
-        <p role="alert" className="pl-2 text-sm font-medium text-accent">
+        <p role="alert" className={errorClasses}>
           {scanError}
         </p>
       )}
 
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
-        <label className="flex flex-col gap-1.5">
-          <span className="pl-2 text-xs font-medium text-muted">What it was</span>
+        <label className={fieldClasses}>
+          <span className={labelClasses}>What it was</span>
           <input
             name="description"
             type="text"
@@ -160,8 +195,8 @@ export default function DeductionForm() {
             className={inputClasses}
           />
         </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="pl-2 text-xs font-medium text-muted">Category</span>
+        <label className={fieldClasses}>
+          <span className={labelClasses}>Category</span>
           <select
             name="category"
             required
@@ -179,8 +214,8 @@ export default function DeductionForm() {
             ))}
           </select>
         </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="pl-2 text-xs font-medium text-muted">Amount</span>
+        <label className={fieldClasses}>
+          <span className={labelClasses}>Amount</span>
           <input
             name="amount"
             type="text"
@@ -192,8 +227,8 @@ export default function DeductionForm() {
             className={inputClasses}
           />
         </label>
-        <label className="flex flex-col gap-1.5">
-          <span className="pl-2 text-xs font-medium text-muted">Date (optional)</span>
+        <label className={fieldClasses}>
+          <span className={labelClasses}>Date (optional)</span>
           <input
             name="date"
             type="date"
@@ -205,20 +240,20 @@ export default function DeductionForm() {
       </div>
 
       {state?.error && (
-        <p role="alert" className="pl-2 text-sm font-medium text-accent">
+        <p role="alert" className={errorClasses}>
           {state.error}
         </p>
       )}
       {state?.saved && (
-        <p role="status" className="pl-2 text-sm font-medium text-ink">
+        <p role="status" className="text-sm font-medium text-positive">
           Deduction saved.
         </p>
       )}
 
       <div>
-        <PillButton type="submit" disabled={pending} arrow>
+        <Button type="submit" disabled={pending}>
           {pending ? "Saving…" : "Save deduction"}
-        </PillButton>
+        </Button>
       </div>
     </form>
   );

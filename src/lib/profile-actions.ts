@@ -146,14 +146,23 @@ export async function deleteAccount(
   const valid = await bcrypt.compare(password, user.passwordHash);
   if (!valid) return { error: "That password is not correct." };
 
-  // Remove any temp PDF files still on disk before the rows cascade away.
+  // Remove any temp PDF files and saved receipts still on disk before the rows cascade away.
   const pending = await prisma.pendingUpload.findMany({
     where: { userId: user.id },
     select: { filePath: true },
   });
   for (const p of pending) await removeFileQuietly(p.filePath);
 
-  // Cascades to payslips, deductions, pending uploads and verification codes.
+  const withReceipts = await prisma.deduction.findMany({
+    where: { userId: user.id, receiptPath: { not: null } },
+    select: { receiptPath: true },
+  });
+  for (const d of withReceipts) {
+    if (d.receiptPath) await removeFileQuietly(d.receiptPath);
+  }
+
+  // Cascades to payslips, deductions, other income, pending uploads and
+  // verification codes.
   await prisma.user.delete({ where: { id: user.id } });
 
   await signOut({ redirectTo: "/register" });

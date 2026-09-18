@@ -1,8 +1,11 @@
 "use client";
 
 import { useState, useTransition } from "react";
-import Card from "./Card";
 import { deletePayslip } from "@/lib/payslip-actions";
+import { iconButtonClasses, td, tdNumeric, tdStrong, rowClasses, inputClasses } from "./ui";
+import { SortHeader, sortRows, useSort } from "./sorting";
+
+type SortKey = "period" | "net" | "gross" | "tax" | "superann";
 
 export type PayslipRow = {
   id: string;
@@ -13,16 +16,8 @@ export type PayslipRow = {
   fuel: string;
   meal: string;
   superann: string;
+  sort: Record<SortKey, number>;
 };
-
-function SearchIcon() {
-  return (
-    <svg width="14" height="14" viewBox="0 0 15 15" fill="none" aria-hidden="true">
-      <circle cx="6.5" cy="6.5" r="4.5" stroke="currentColor" strokeWidth="1.5" />
-      <path d="m10 10 3 3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
 
 function DeleteButton({ id }: { id: string }) {
   const [isPending, startTransition] = useTransition();
@@ -36,7 +31,7 @@ function DeleteButton({ id }: { id: string }) {
           startTransition(() => deletePayslip(id));
         }
       }}
-      className="flex size-10 items-center justify-center rounded-full border border-ink/10 bg-card text-muted transition-colors hover:border-accent hover:text-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-40"
+      className={iconButtonClasses}
     >
       <svg width="15" height="15" viewBox="0 0 15 15" fill="none" aria-hidden="true">
         <path
@@ -51,11 +46,9 @@ function DeleteButton({ id }: { id: string }) {
   );
 }
 
-const cellClasses = "px-3 py-3.5 text-sm whitespace-nowrap";
-const headClasses = "px-3 py-2 text-left text-xs font-medium text-muted whitespace-nowrap";
-
 export default function PayslipList({ rows }: { rows: PayslipRow[] }) {
   const [query, setQuery] = useState("");
+  const sort = useSort<SortKey>("period");
 
   const q = query.trim().toLowerCase();
   const filtered = q
@@ -66,94 +59,100 @@ export default function PayslipList({ rows }: { rows: PayslipRow[] }) {
           .includes(q)
       )
     : rows;
+  const sorted = sortRows(filtered, sort, (row, key) => row.sort[key]);
 
   return (
-    <Card>
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 className="text-lg font-bold tracking-tight text-ink">Payslips</h2>
-        <label className="flex items-center gap-2 rounded-full border border-ink/10 bg-card px-4 py-2 text-muted focus-within:ring-2 focus-within:ring-accent">
-          <SearchIcon />
-          <input
-            type="search"
-            value={query}
-            onChange={(e) => setQuery(e.target.value)}
-            placeholder="Search payslips…"
-            className="w-36 bg-transparent text-sm text-ink placeholder:text-muted focus:outline-none sm:w-48"
-          />
-        </label>
+    <div className="rounded-card border border-line bg-card shadow-card">
+      <div className="flex flex-wrap items-center justify-between gap-3 border-b border-line p-4">
+        <h2 className="text-sm font-semibold text-ink">
+          Payslips{" "}
+          <span className="ml-1 font-normal tabular-nums text-muted">
+            {filtered.length}
+          </span>
+        </h2>
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="Search payslips…"
+          aria-label="Search payslips"
+          className={`${inputClasses} w-full sm:w-56`}
+        />
       </div>
 
       {/* Mobile: stacked cards so nothing is cut off on a narrow screen */}
-      <div className="mt-4 flex flex-col gap-3 sm:hidden">
-        {filtered.map((r) => (
-          <div key={r.id} className="rounded-2xl border border-ink/5 bg-surface p-4">
+      <div className="flex flex-col divide-y divide-line sm:hidden">
+        {sorted.map((r) => (
+          <div key={r.id} className="p-4">
             <div className="flex items-start justify-between gap-3">
               <div>
-                <p className="text-xs font-medium text-muted">Pay period</p>
-                <p className="mt-0.5 text-sm font-semibold text-ink">{r.period}</p>
+                <p className="text-xs text-muted">Pay period</p>
+                <p className="mt-0.5 text-sm font-medium text-ink">{r.period}</p>
               </div>
               <DeleteButton id={r.id} />
             </div>
-            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-2">
+            <dl className="mt-3 grid grid-cols-2 gap-x-4 gap-y-1.5">
               {[
-                ["Net", r.net, true],
-                ["Gross", r.gross, false],
-                ["Tax", r.tax, false],
-                ["Super", r.superann, false],
-                ["Fuel", r.fuel, false],
-                ["Meals", r.meal, false],
-              ].map(([label, value, strong]) => (
-                <div key={label as string} className="flex items-baseline justify-between gap-2">
+                ["Net", r.net],
+                ["Gross", r.gross],
+                ["Tax", r.tax],
+                ["Super", r.superann],
+                ["Fuel", r.fuel],
+                ["Meals", r.meal],
+              ].map(([label, value]) => (
+                <div key={label} className="flex items-baseline justify-between gap-2">
                   <dt className="text-xs text-muted">{label}</dt>
-                  <dd className={`text-sm ${strong ? "font-bold" : ""} text-ink`}>{value}</dd>
+                  <dd className="text-sm tabular-nums text-ink">{value}</dd>
                 </div>
               ))}
             </dl>
           </div>
         ))}
-        {filtered.length === 0 && (
-          <p className="py-6 text-center text-sm text-muted">
+        {sorted.length === 0 && (
+          <p className="p-6 text-center text-sm text-muted">
             No payslips match your search.
           </p>
         )}
       </div>
 
-      {/* Desktop: full table. `relative` keeps the sr-only cell's containing block
-          inside this scroll box so it can't push the page width out. */}
-      <div className="relative mt-4 hidden overflow-x-auto sm:block">
+      <div className="relative hidden overflow-x-auto sm:block">
         <table className="w-full min-w-[760px] border-collapse">
           <thead>
-            <tr className="border-b border-ink/5">
-              <th className={headClasses}>Pay period</th>
-              <th className={headClasses}>Net</th>
-              <th className={headClasses}>Gross</th>
-              <th className={headClasses}>Tax</th>
-              <th className={headClasses}>Fuel</th>
-              <th className={headClasses}>Meals</th>
-              <th className={headClasses}>Super</th>
-              <th className={headClasses}>
+            <tr>
+              <SortHeader label="Pay period" sortKey="period" state={sort} />
+              <SortHeader label="Net" sortKey="net" state={sort} numeric />
+              <SortHeader label="Gross" sortKey="gross" state={sort} numeric />
+              <SortHeader label="Tax" sortKey="tax" state={sort} numeric />
+              <th className={`${td} text-right text-[11px] font-semibold uppercase tracking-wider text-muted`}>
+                Fuel
+              </th>
+              <th className={`${td} text-right text-[11px] font-semibold uppercase tracking-wider text-muted`}>
+                Meals
+              </th>
+              <SortHeader label="Super" sortKey="superann" state={sort} numeric />
+              <th className={td}>
                 <span className="sr-only">Actions</span>
               </th>
             </tr>
           </thead>
           <tbody>
-            {filtered.map((r) => (
-              <tr key={r.id} className="border-b border-ink/5 last:border-0">
-                <td className={`${cellClasses} font-semibold text-ink`}>{r.period}</td>
-                <td className={`${cellClasses} font-bold text-ink`}>{r.net}</td>
-                <td className={`${cellClasses} text-ink`}>{r.gross}</td>
-                <td className={`${cellClasses} text-ink`}>{r.tax}</td>
-                <td className={`${cellClasses} text-ink`}>{r.fuel}</td>
-                <td className={`${cellClasses} text-ink`}>{r.meal}</td>
-                <td className={`${cellClasses} text-ink`}>{r.superann}</td>
-                <td className={`${cellClasses} text-right`}>
+            {sorted.map((r) => (
+              <tr key={r.id} className={rowClasses}>
+                <td className={tdStrong}>{r.period}</td>
+                <td className={`${tdNumeric} font-semibold`}>{r.net}</td>
+                <td className={tdNumeric}>{r.gross}</td>
+                <td className={tdNumeric}>{r.tax}</td>
+                <td className={tdNumeric}>{r.fuel}</td>
+                <td className={tdNumeric}>{r.meal}</td>
+                <td className={tdNumeric}>{r.superann}</td>
+                <td className={`${td} text-right`}>
                   <DeleteButton id={r.id} />
                 </td>
               </tr>
             ))}
-            {filtered.length === 0 && (
+            {sorted.length === 0 && (
               <tr>
-                <td colSpan={8} className="px-3 py-8 text-center text-sm text-muted">
+                <td colSpan={8} className="px-3 py-10 text-center text-sm text-muted">
                   No payslips match your search.
                 </td>
               </tr>
@@ -161,6 +160,6 @@ export default function PayslipList({ rows }: { rows: PayslipRow[] }) {
           </tbody>
         </table>
       </div>
-    </Card>
+    </div>
   );
 }

@@ -1,24 +1,136 @@
 @import "tailwindcss";
 
+/* Light is the primary theme; the dark palette below swaps the same tokens so
+   every component follows without needing `dark:` variants. */
 @theme {
-  --color-canvas: #e9e7e2;
-  --color-surface: #f7f6f3;
+  --color-canvas: #f4f6f8;
+  --color-surface: #ffffff;
   --color-card: #ffffff;
-  --color-accent: #2e5be6;
-  --color-accent-soft: #d9e2fb;
-  --color-ink: #17171a;
-  --color-muted: #9b9a96;
-  --color-danger: #c8402f;
-  --color-danger-soft: #f6d5cf;
+  --color-inset: #f7f8fa;
+  --color-line: #e2e6eb;
+  --color-line-strong: #c9d0d9;
+
+  --color-ink: #0d1520;
+  --color-ink-soft: #3d4855;
+  --color-muted: #646d7a;
+
+  /* Derived from the PayTrack mark, deepened for use behind white text. */
+  --color-accent: #2a4fc4;
+  --color-accent-hover: #1f3da0;
+  --color-accent-soft: #eef1fc;
+  --color-on-accent: #ffffff;
+
+  /* Chart marks are tuned per theme against the card surface and validated
+     for lightness band, chroma and contrast — not reused from the UI accent. */
+  --color-chart: #2a4fc4;
+  --color-chart-soft: #dfe5fa;
+
+  --color-positive: #0a6c47;
+  --color-positive-soft: #e5f3ec;
+  --color-negative: #a8341f;
+  --color-negative-soft: #fbecea;
+  --color-danger: #a8341f;
+  --color-danger-soft: #fbecea;
 
   --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
 
-  --radius-shell: 32px;
-  --radius-card: 24px;
+  --radius-card: 12px;
+  --radius-control: 8px;
+  --radius-badge: 6px;
+
+  --shadow-card: 0 1px 2px rgba(13, 21, 32, 0.05);
+  --shadow-raised: 0 4px 12px -2px rgba(13, 21, 32, 0.1), 0 2px 4px -2px rgba(13, 21, 32, 0.06);
+  --shadow-drawer: 0 16px 48px -12px rgba(13, 21, 32, 0.28);
+}
+
+/* Dark palette. Declared twice on purpose: once for the system preference
+   (unless the user pinned light) and once for an explicit `data-theme`. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --color-canvas: #0b1017;
+    --color-surface: #111823;
+    --color-card: #141c28;
+    --color-inset: #1a2330;
+    --color-line: #26313f;
+    --color-line-strong: #384757;
+
+    --color-ink: #e8edf3;
+    --color-ink-soft: #b3bdc9;
+    --color-muted: #7d8896;
+
+    --color-accent: #7b9bf8;
+    --color-accent-hover: #93aefa;
+    --color-accent-soft: #1a2647;
+    --color-on-accent: #0a1020;
+
+    --color-chart: #4a7fe8;
+    --color-chart-soft: #1d2a45;
+
+    --color-positive: #4ec489;
+    --color-positive-soft: #102a1f;
+    --color-negative: #f0736a;
+    --color-negative-soft: #2c1613;
+    --color-danger: #f0736a;
+    --color-danger-soft: #2c1613;
+
+    --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+    --shadow-raised: 0 4px 12px -2px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+    --shadow-drawer: 0 16px 48px -12px rgba(0, 0, 0, 0.7);
+  }
+}
+
+:root[data-theme="dark"] {
+  --color-canvas: #0b1017;
+  --color-surface: #111823;
+  --color-card: #141c28;
+  --color-inset: #1a2330;
+  --color-line: #26313f;
+  --color-line-strong: #384757;
+
+  --color-ink: #e8edf3;
+  --color-ink-soft: #b3bdc9;
+  --color-muted: #7d8896;
+
+  --color-accent: #7b9bf8;
+  --color-accent-hover: #93aefa;
+  --color-accent-soft: #1a2647;
+  --color-on-accent: #0a1020;
+
+  --color-chart: #4a7fe8;
+  --color-chart-soft: #1d2a45;
+
+  --color-positive: #4ec489;
+  --color-positive-soft: #102a1f;
+  --color-negative: #f0736a;
+  --color-negative-soft: #2c1613;
+  --color-danger: #f0736a;
+  --color-danger-soft: #2c1613;
+
+  --shadow-card: 0 1px 2px rgba(0, 0, 0, 0.4);
+  --shadow-raised: 0 4px 12px -2px rgba(0, 0, 0, 0.5), 0 2px 4px -2px rgba(0, 0, 0, 0.4);
+  --shadow-drawer: 0 16px 48px -12px rgba(0, 0, 0, 0.7);
+}
+
+:root {
+  color-scheme: light;
+}
+:root[data-theme="dark"] {
+  color-scheme: dark;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+  }
 }
 
 body {
   background-color: var(--color-canvas);
   color: var(--color-ink);
   font-family: var(--font-sans);
+}
+
+/* Money and dates line up column-to-column across every table and stat. */
+table,
+.numeric {
+  font-variant-numeric: tabular-nums;
 }

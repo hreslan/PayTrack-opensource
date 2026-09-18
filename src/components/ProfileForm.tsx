@@ -1,11 +1,10 @@
 "use client";
 
 import { useActionState, useRef, useState } from "react";
-import PillButton from "./PillButton";
+import Button from "./Button";
 import { updateProfile, type ProfileFormState } from "@/lib/profile-actions";
+import { errorClasses, fieldClasses, inputClasses, labelClasses } from "./ui";
 
-const inputClasses =
-  "w-full rounded-full border border-ink/10 bg-card px-5 py-3 text-sm text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent";
 
 /** Centre-crop to a square and resize to 256px so avatars stay small. */
 async function fileToAvatar(file: File): Promise<string> {
@@ -89,18 +88,18 @@ export default function ProfileForm({
           </span>
         )}
         <div className="flex flex-wrap gap-3">
-          <PillButton
+          <Button
             type="button"
             variant="tertiary"
             onClick={() => fileRef.current?.click()}
           >
             Choose photo
-          </PillButton>
+          </Button>
           {preview && (
             <button
               type="button"
               onClick={() => setAvatarField("__remove__")}
-              className="rounded-full px-4 py-2 text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+              className="rounded-control px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             >
               Remove photo
             </button>
@@ -117,8 +116,8 @@ export default function ProfileForm({
         <input type="hidden" name="avatar" value={avatarField} />
       </div>
 
-      <label className="flex flex-col gap-1.5">
-        <span className="pl-2 text-xs font-medium text-muted">Display name</span>
+      <label className={fieldClasses}>
+        <span className={labelClasses}>Display name</span>
         <input
           name="displayName"
           type="text"
@@ -129,8 +128,8 @@ export default function ProfileForm({
         />
       </label>
 
-      <label className="flex flex-col gap-1.5">
-        <span className="pl-2 text-xs font-medium text-muted">
+      <label className={fieldClasses}>
+        <span className={labelClasses}>
           Phone number (for SMS codes, once an SMS provider is set up)
         </span>
         <input
@@ -142,28 +141,28 @@ export default function ProfileForm({
         />
       </label>
 
-      <div className="flex flex-col gap-1.5">
-        <span className="pl-2 text-xs font-medium text-muted">Email</span>
-        <p className="rounded-full border border-ink/5 bg-surface px-5 py-3 text-sm text-muted">
+      <div className={fieldClasses}>
+        <span className={labelClasses}>Email</span>
+        <p className="rounded-control border border-line bg-inset px-3 py-2.5 text-sm text-muted">
           {email}
         </p>
       </div>
 
       {(state?.error || fileError) && (
-        <p role="alert" className="pl-2 text-sm font-medium text-accent">
+        <p role="alert" className={errorClasses}>
           {state?.error ?? fileError}
         </p>
       )}
       {state?.saved && !fileError && (
-        <p role="status" className="pl-2 text-sm font-medium text-ink">
+        <p role="status" className="text-sm font-medium text-positive">
           Profile saved.
         </p>
       )}
 
       <div>
-        <PillButton type="submit" disabled={pending} arrow>
+        <Button type="submit" disabled={pending}>
           {pending ? "Saving…" : "Save changes"}
-        </PillButton>
+        </Button>
       </div>
     </form>
   );

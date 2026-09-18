@@ -3,8 +3,11 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import { formatMoney, formatDate } from "@/lib/format";
 import { fyOf, fyLabel } from "@/lib/tax";
+import { monthlyTotals } from "@/lib/fy-months";
 import AppShell from "@/components/AppShell";
 import Card from "@/components/Card";
+import PageHeader from "@/components/PageHeader";
+import MonthlyBarChart from "@/components/MonthlyBarChart";
 import DeductionForm from "@/components/DeductionForm";
 import DeductionList, { type DeductionRow } from "@/components/DeductionList";
 
@@ -22,46 +25,61 @@ export default async function DeductionsPage() {
     .filter((d) => fyOf(d.date ?? d.createdAt) === currentFy)
     .reduce((acc, d) => acc + d.amount, 0);
 
+  const monthly = monthlyTotals(
+    deductions.map((d) => ({ date: d.date ?? d.createdAt, amount: d.amount })),
+    currentFy
+  );
+
   const rows: DeductionRow[] = deductions.map((d) => ({
     id: d.id,
     date: formatDate(d.date),
     description: d.description,
     category: d.category,
     amount: formatMoney(d.amount),
+    hasReceipt: d.receiptPath !== null,
+    sort: {
+      date: (d.date ?? d.createdAt).getTime(),
+      description: d.description.toLowerCase(),
+      category: d.category.toLowerCase(),
+      amount: d.amount,
+    },
   }));
 
   return (
     <AppShell>
-      <div className="flex flex-wrap items-end justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-            Deductions
-          </h1>
-          <p className="mt-1 text-sm text-muted">
-            Work expenses you can claim. They reduce your taxable income in the
-            tax return estimate.
-          </p>
-        </div>
+      <PageHeader
+        title="Deductions"
+        description="Work expenses you can claim. They reduce your taxable income in the tax return estimate."
+      >
         <div className="text-right">
-          <p className="text-xs font-medium text-muted">
-            Claimed this year ({fyLabel(currentFy)})
+          <p className="text-[11px] font-semibold uppercase tracking-wider text-muted">
+            Claimed in {fyLabel(currentFy)}
           </p>
-          <p className="text-2xl font-bold tracking-tight text-ink">
+          <p className="mt-0.5 text-xl font-semibold tabular-nums text-ink">
             {formatMoney(thisFyTotal)}
           </p>
         </div>
+      </PageHeader>
+
+      <div className="mt-6">
+        <MonthlyBarChart
+          title="Deductions by month"
+          data={monthly}
+          note={`What you claimed each month of ${fyLabel(currentFy)}.`}
+        />
       </div>
 
-      <Card className="mt-6">
-        <h2 className="mb-4 text-lg font-bold tracking-tight text-ink">
-          Add a deduction
-        </h2>
+      <Card className="mt-4">
+        <h2 className="mb-4 text-sm font-semibold text-ink">Add a deduction</h2>
         <DeductionForm />
       </Card>
 
-      <Card className="mt-6">
-        <h2 className="mb-2 text-lg font-bold tracking-tight text-ink">
-          Your deductions
+      <Card className="mt-4">
+        <h2 className="mb-3 text-sm font-semibold text-ink">
+          Your deductions{" "}
+          <span className="ml-1 font-normal tabular-nums text-muted">
+            {rows.length}
+          </span>
         </h2>
         <DeductionList rows={rows} />
       </Card>

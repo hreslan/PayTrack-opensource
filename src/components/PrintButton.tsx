@@ -1,11 +1,11 @@
 "use client";
 
-import PillButton from "./PillButton";
+import Button from "./Button";
 
 export default function PrintButton() {
   return (
-    <PillButton type="button" onClick={() => window.print()}>
+    <Button type="button" onClick={() => window.print()}>
       Print / Save as PDF
-    </PillButton>
+    </Button>
   );
 }

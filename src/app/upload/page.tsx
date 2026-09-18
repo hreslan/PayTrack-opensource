@@ -2,6 +2,7 @@ import { redirect } from "next/navigation";
 import { auth } from "@/lib/auth";
 import AppShell from "@/components/AppShell";
 import Card from "@/components/Card";
+import PageHeader from "@/components/PageHeader";
 import UploadForm from "@/components/UploadForm";
 
 export default async function UploadPage() {
@@ -10,15 +11,12 @@ export default async function UploadPage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-xl py-6">
-        <Card>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">
-            Upload a payslip
-          </h1>
-          <p className="mt-1 mb-6 text-sm text-muted">
-            We read the figures, you check them, then the PDF is deleted for
-            good. Only the confirmed numbers are kept.
-          </p>
+      <div className="mx-auto max-w-2xl">
+        <PageHeader
+          title="Upload a payslip"
+          description="We read the figures, you check them, then the PDF is deleted for good. Only the confirmed numbers are kept."
+        />
+        <Card className="mt-6">
           <UploadForm />
         </Card>
       </div>

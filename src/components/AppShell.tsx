@@ -24,30 +24,31 @@ export default async function AppShell({
   const name = user ? user.displayName || user.email.split("@")[0] : null;
 
   return (
-    <div className="flex min-h-screen bg-surface">
+    <div className="flex min-h-screen bg-canvas">
       <Sidebar loggedIn={!!user} logoutAction={logout} />
 
-      <div className="flex min-w-0 flex-1 flex-col px-4 py-5 sm:px-8 sm:py-7">
-        {/* Mobile top bar: hamburger opens the drawer; profile/brand on the right */}
-        <div className="mb-3 flex items-center justify-between gap-3 md:hidden">
+      <div className="flex min-w-0 flex-1 flex-col">
+        <header
+          className={`sticky top-0 z-30 flex items-center gap-3 border-b border-line bg-surface px-4 py-2.5 sm:px-6 ${
+            user ? "" : "md:hidden"
+          }`}
+        >
           <MobileMenu loggedIn={!!user} logoutAction={logout} />
           {user ? (
-            <ProfileLink avatar={user.avatar} name={name} />
+            <ProfileLink avatar={user.avatar} name={name} email={user.email} />
           ) : (
-            <Link href="/" className="text-base font-bold text-ink">
-              Payslip
+            <Link
+              href="/"
+              className="ml-auto text-base font-semibold tracking-tight text-ink"
+            >
+              PayTrack
             </Link>
           )}
-        </div>
+        </header>
 
-        {/* Desktop header: profile top-right */}
-        {user && (
-          <header className="hidden items-center justify-end md:flex">
-            <ProfileLink avatar={user.avatar} name={name} />
-          </header>
-        )}
-
-        <main className={user ? "mt-6" : "mt-2"}>{children}</main>
+        <main className="mx-auto w-full max-w-6xl px-4 py-6 sm:px-6 sm:py-8">
+          {children}
+        </main>
       </div>
     </div>
   );
@@ -56,30 +57,34 @@ export default async function AppShell({
 function ProfileLink({
   avatar,
   name,
+  email,
 }: {
   avatar: string | null;
   name: string | null;
+  email: string;
 }) {
   return (
     <Link
       href="/profile"
       title="Edit profile"
-      className="flex items-center gap-2.5 rounded-full p-1 pr-4 transition-colors hover:bg-card focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+      className="ml-auto flex items-center gap-2.5 rounded-control px-2 py-1.5 transition-colors hover:bg-inset focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
     >
+      <span className="hidden leading-tight sm:block">
+        <span className="block max-w-[180px] truncate text-sm font-medium text-ink">
+          {name}
+        </span>
+        <span className="block max-w-[180px] truncate text-xs text-muted">
+          {email}
+        </span>
+      </span>
       {avatar ? (
         // eslint-disable-next-line @next/next/no-img-element
-        <img src={avatar} alt="" className="size-10 rounded-full object-cover" />
+        <img src={avatar} alt="" className="size-8 rounded-full object-cover" />
       ) : (
-        <span className="flex size-10 items-center justify-center rounded-full bg-accent-soft text-sm font-bold text-accent">
+        <span className="flex size-8 items-center justify-center rounded-full bg-accent-soft text-xs font-semibold text-accent">
           {name?.[0]?.toUpperCase()}
         </span>
       )}
-      <span className="leading-tight">
-        <span className="block max-w-[160px] truncate text-sm font-semibold text-ink">
-          {name}
-        </span>
-        <span className="block text-xs text-muted">Account holder</span>
-      </span>
     </Link>
   );
 }

@@ -13,12 +13,16 @@ export function parseScope(raw: string | undefined, years: number[]): ExportScop
 }
 
 export async function loadExport(userId: string, scope: ExportScope) {
-  const [allPayslips, allDeductions] = await Promise.all([
+  const [allPayslips, allDeductions, allOtherIncome] = await Promise.all([
     prisma.payslip.findMany({
       where: { userId },
       orderBy: [{ periodEnd: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
     }),
     prisma.deduction.findMany({
+      where: { userId },
+      orderBy: [{ date: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
+    }),
+    prisma.otherIncome.findMany({
       where: { userId },
       orderBy: [{ date: { sort: "desc", nulls: "last" } }, { createdAt: "desc" }],
     }),
@@ -34,13 +38,17 @@ export async function loadExport(userId: string, scope: ExportScope) {
     scope === "all"
       ? allDeductions
       : allDeductions.filter((d) => fyOf(d.date ?? d.createdAt) === scope);
+  const otherIncome =
+    scope === "all"
+      ? allOtherIncome
+      : allOtherIncome.filter((i) => fyOf(i.date ?? i.createdAt) === scope);
 
-  return { payslips, deductions };
+  return { payslips, deductions, otherIncome };
 }
 
 /** Every financial year the user has any data in, newest first. */
 export async function availableYears(userId: string): Promise<number[]> {
-  const [payslips, deductions] = await Promise.all([
+  const [payslips, deductions, otherIncome] = await Promise.all([
     prisma.payslip.findMany({
       where: { userId },
       select: { periodStart: true, periodEnd: true, createdAt: true },
@@ -49,10 +57,15 @@ export async function availableYears(userId: string): Promise<number[]> {
       where: { userId },
       select: { date: true, createdAt: true },
     }),
+    prisma.otherIncome.findMany({
+      where: { userId },
+      select: { date: true, createdAt: true },
+    }),
   ]);
   const years = new Set<number>([
     ...payslips.map((p) => fyOf(p.periodEnd ?? p.periodStart ?? p.createdAt)),
     ...deductions.map((d) => fyOf(d.date ?? d.createdAt)),
+    ...otherIncome.map((i) => fyOf(i.date ?? i.createdAt)),
   ]);
   if (years.size === 0) years.add(fyOf(new Date()));
   return [...years].sort((a, b) => b - a);

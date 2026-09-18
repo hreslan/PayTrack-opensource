@@ -1,8 +1,9 @@
 "use client";
 
 import { useActionState } from "react";
-import PillButton from "./PillButton";
+import Button from "./Button";
 import type { AuthFormState } from "@/lib/auth-actions";
+import { codeInputClasses, errorClasses, fieldClasses, labelClasses } from "./ui";
 
 type Action = (prev: AuthFormState, formData: FormData) => Promise<AuthFormState>;
 
@@ -23,8 +24,8 @@ export default function VerifyForm({
 
   return (
     <form action={formAction} className="flex flex-col gap-4">
-      <label className="flex flex-col gap-1.5">
-        <span className="pl-2 text-xs font-medium text-muted">6-digit code</span>
+      <label className={fieldClasses}>
+        <span className={labelClasses}>6-digit code</span>
         <input
           name="code"
           type="text"
@@ -35,22 +36,22 @@ export default function VerifyForm({
           required
           autoFocus
           placeholder="000000"
-          className="w-full rounded-full border border-ink/10 bg-card px-5 py-3 text-center text-lg font-bold tracking-[0.4em] text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+          className={codeInputClasses}
         />
       </label>
 
       {state?.error && (
-        <p role="alert" className="pl-2 text-sm font-medium text-accent">
+        <p role="alert" className={errorClasses}>
           {state.error}
         </p>
       )}
 
-      <PillButton type="submit" disabled={pending} arrow>
+      <Button type="submit" disabled={pending}>
         {pending ? "Checking…" : "Verify & log in"}
-      </PillButton>
+      </Button>
 
       {resendState?.error && (
-        <p role="alert" className="pl-2 text-sm font-medium text-accent">
+        <p role="alert" className={errorClasses}>
           {resendState.error}
         </p>
       )}
@@ -61,7 +62,7 @@ export default function VerifyForm({
           formAction={resendFormAction}
           formNoValidate
           disabled={resendPending}
-          className="rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
+          className="rounded-control px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50"
         >
           {resendPending ? "Sending…" : "Send a new code"}
         </button>
@@ -69,7 +70,7 @@ export default function VerifyForm({
           type="submit"
           formAction={cancelAction}
           formNoValidate
-          className="rounded-full px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="rounded-control px-3 py-2 text-sm font-medium text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           Back to login
         </button>

@@ -2,6 +2,7 @@ import Link from "next/link";
 import type { Metadata } from "next";
 import AppShell from "@/components/AppShell";
 import Card from "@/components/Card";
+import PageHeader from "@/components/PageHeader";
 
 export const metadata: Metadata = {
   title: "Privacy & your data — PayTrack",
@@ -25,10 +26,10 @@ function Section({
 }) {
   return (
     <section aria-labelledby={id} className="scroll-mt-6">
-      <h2 id={id} className="text-lg font-semibold text-ink">
+      <h2 id={id} className="text-base font-semibold text-ink">
         {title}
       </h2>
-      <div className="mt-2 flex flex-col gap-3 text-[15px] leading-relaxed text-ink/75">
+      <div className="mt-2 flex flex-col gap-3 text-[15px] leading-relaxed text-ink-soft">
         {children}
       </div>
     </section>
@@ -42,22 +43,17 @@ function Emph({ children }: { children: React.ReactNode }) {
 export default function PrivacyPage() {
   return (
     <AppShell>
-      <div className="mx-auto max-w-2xl py-6">
-        <div className="mb-6">
-          <h1 className="text-2xl font-bold tracking-tight text-ink sm:text-3xl">
-            Privacy &amp; your data
-          </h1>
-          <p className="mt-1 text-sm text-muted">
-            PayTrack reads your payslips and receipts to work out your pay and
-            tax. Here is exactly what happens to that data — in plain English.
-          </p>
-        </div>
+      <div className="mx-auto max-w-2xl">
+        <PageHeader
+          title="Privacy &amp; your data"
+          description="PayTrack reads your payslips and receipts to work out your pay and tax. Here is exactly what happens to that data — in plain English."
+        />
 
-        <Card>
+        <Card className="mt-6">
           {/* The short version */}
-          <div className="rounded-2xl bg-accent-soft/50 p-5">
+          <div className="rounded-card border border-line bg-inset p-5">
             <h2 className="text-sm font-semibold text-ink">The short version</h2>
-            <ul className="mt-3 flex flex-col gap-2.5 text-sm text-ink/80">
+            <ul className="mt-3 flex flex-col gap-2.5 text-sm text-ink-soft">
               {[
                 "Your uploaded payslip PDF is deleted the moment you confirm or cancel — and within an hour at the very latest. Only the figures you check are kept.",
                 "Receipts are never saved at all. They are read in memory and thrown away; only the deduction details you save remain.",
@@ -71,7 +67,7 @@ export default function PrivacyPage() {
                     viewBox="0 0 18 18"
                     fill="none"
                     aria-hidden="true"
-                    className="mt-0.5 shrink-0 text-accent"
+                    className="mt-0.5 shrink-0 text-positive"
                   >
                     <path
                       d="M4 9.5l3 3 7-7"
@@ -106,6 +102,12 @@ export default function PrivacyPage() {
                   <Emph>Deductions</Emph> — the description, category, amount and
                   date you save for each work expense. The original receipt is
                   not kept.
+                </li>
+                <li>
+                  <Emph>Other income</Emph> — the source, category, amount and
+                  date you save for income that didn&rsquo;t come through a
+                  payslip. PayTrack never connects to your bank to find it; it
+                  only knows what you type in.
                 </li>
               </ul>
             </Section>
@@ -202,11 +204,11 @@ export default function PrivacyPage() {
               <ul className="flex list-disc flex-col gap-2 pl-5 marker:text-muted">
                 <li>
                   <Emph>Take it with you.</Emph> The{" "}
-                  <Link href="/export" className="text-accent hover:underline">
+                  <Link href="/export" className="font-medium text-accent underline underline-offset-4">
                     Export
                   </Link>{" "}
-                  page lets you download your payslips and deductions as CSV files
-                  or a printable report at any time.
+                  page lets you download your payslips, deductions and other
+                  income as CSV files or a printable report at any time.
                 </li>
                 <li>
                   <Emph>Fix it.</Emph> You can edit your profile, and correct any
@@ -214,12 +216,12 @@ export default function PrivacyPage() {
                 </li>
                 <li>
                   <Emph>Erase it.</Emph> Deleting your account from the{" "}
-                  <Link href="/profile" className="text-accent hover:underline">
+                  <Link href="/profile" className="font-medium text-accent underline underline-offset-4">
                     Profile
                   </Link>{" "}
                   page permanently removes your account and everything linked to
-                  it — payslips, deductions and verification codes. This cannot be
-                  undone.
+                  it — payslips, deductions, other income and verification codes.
+                  This cannot be undone.
                 </li>
               </ul>
             </Section>
@@ -246,7 +248,7 @@ export default function PrivacyPage() {
                 If you have any question about your data, contact us at{" "}
                 <a
                   href={`mailto:${CONTACT_EMAIL}`}
-                  className="text-accent hover:underline"
+                  className="font-medium text-accent underline underline-offset-4"
                 >
                   {CONTACT_EMAIL}
                 </a>
@@ -255,7 +257,7 @@ export default function PrivacyPage() {
             </Section>
           </div>
 
-          <p className="mt-8 border-t border-ink/10 pt-5 text-xs text-muted">
+          <p className="mt-8 border-t border-line pt-5 text-xs text-muted">
             Last updated {LAST_UPDATED}.
           </p>
         </Card>

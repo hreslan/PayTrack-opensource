@@ -4,5 +4,7 @@ node_modules/
 *.db
 *.db-journal
 .uploads/
+.receipts/
 next-env.d.ts
 *.tsbuildinfo
+.neon

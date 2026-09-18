@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
+import ThemeToggle from "./ThemeToggle";
 
 function DashboardIcon() {
   return (
@@ -45,6 +46,20 @@ function ReceiptIcon() {
         strokeLinejoin="round"
       />
       <path d="M6.5 6h5M6.5 9h5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
+    </svg>
+  );
+}
+
+function IncomeIcon() {
+  return (
+    <svg width="18" height="18" viewBox="0 0 18 18" fill="none" aria-hidden="true">
+      <circle cx="9" cy="9" r="6.5" stroke="currentColor" strokeWidth="1.5" />
+      <path
+        d="M11 6.75c-.5-.65-1.2-1-2-1-1.1 0-1.9.5-1.9 1.35 0 2 3.9.8 3.9 2.85 0 .9-.85 1.4-2 1.4-.85 0-1.6-.35-2.1-1.05M9 4.75v8.5"
+        stroke="currentColor"
+        strokeWidth="1.5"
+        strokeLinecap="round"
+      />
     </svg>
   );
 }
@@ -114,7 +129,7 @@ function CloseIcon() {
 }
 
 const itemBase =
-  "flex items-center gap-3 rounded-full px-4 py-3 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
+  "flex items-center gap-3 rounded-control px-3 py-2 text-sm font-medium transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent";
 
 function NavItem({
   href,
@@ -135,7 +150,9 @@ function NavItem({
       aria-current={active ? "page" : undefined}
       onClick={onClick}
       className={`${itemBase} ${
-        active ? "bg-ink text-white" : "text-muted hover:bg-card hover:text-ink"
+        active
+          ? "bg-accent-soft font-semibold text-accent"
+          : "text-muted hover:bg-inset hover:text-ink"
       }`}
     >
       {icon}
@@ -151,6 +168,7 @@ function useNavLinks(loggedIn: boolean) {
         { href: "/upload", label: "Upload payslip", icon: <UploadIcon /> },
         { href: "/tax-return", label: "Tax return", icon: <TaxIcon /> },
         { href: "/deductions", label: "Deductions", icon: <ReceiptIcon /> },
+        { href: "/income", label: "Other income", icon: <IncomeIcon /> },
         { href: "/export", label: "Export", icon: <ExportIcon /> },
         { href: "/profile", label: "Profile", icon: <ProfileIcon /> },
       ]
@@ -176,37 +194,40 @@ function SidebarContent({
   const links = useNavLinks(loggedIn);
 
   return (
-    <div className="flex h-full flex-col px-5 py-6 md:py-7">
-      <div className="relative mb-8 flex items-center justify-center">
+    <div className="flex h-full flex-col px-3 py-5">
+      <div className="relative mb-6 flex items-center justify-between px-1">
         <Link
           href="/"
           aria-label="PayTrack"
           onClick={onNavigate}
-          className="flex rounded-lg focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="flex items-center gap-2 rounded-control focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           <Image
-            src="/brand/paytrack-lockup.png"
-            alt="PayTrack"
-            width={1965}
-            height={443}
-            sizes="180px"
+            src="/brand/paytrack-icon.png"
+            alt=""
+            width={128}
+            height={128}
+            sizes="28px"
             priority
-            className="h-8 w-auto object-contain"
+            className="size-7 object-contain"
           />
+          <span className="text-base font-semibold tracking-tight text-ink">
+            PayTrack
+          </span>
         </Link>
         {onClose && (
           <button
             type="button"
             aria-label="Close menu"
             onClick={onClose}
-            className="absolute right-0 flex size-9 items-center justify-center rounded-full border border-ink/10 bg-card text-ink transition-colors hover:border-ink/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            className="flex size-8 items-center justify-center rounded-control border border-line bg-surface text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
           >
             <CloseIcon />
           </button>
         )}
       </div>
 
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-0.5">
         {links.map((link) => (
           <NavItem
             key={link.href}
@@ -219,12 +240,13 @@ function SidebarContent({
         ))}
       </div>
 
-      <div className="mt-auto flex flex-col gap-1.5 pt-6">
+      <div className="mt-auto flex flex-col gap-0.5 border-t border-line pt-3">
+        <ThemeToggle />
         {loggedIn && (
           <form action={logoutAction}>
             <button
               type="submit"
-              className={`${itemBase} w-full text-muted hover:bg-card hover:text-ink`}
+              className={`${itemBase} w-full text-muted hover:bg-inset hover:text-ink`}
             >
               <LogoutIcon />
               <span>Log out</span>
@@ -235,7 +257,7 @@ function SidebarContent({
           href="/privacy"
           aria-current={pathname === "/privacy" ? "page" : undefined}
           onClick={onNavigate}
-          className="px-4 py-1 text-xs font-medium text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+          className="px-3 py-1.5 text-xs font-medium text-muted transition-colors hover:text-ink focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
         >
           Privacy &amp; your data
         </Link>
@@ -253,7 +275,7 @@ export default function Sidebar({
   logoutAction: () => Promise<void>;
 }) {
   return (
-    <nav className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-ink/5 md:flex">
+    <nav className="sticky top-0 hidden h-screen w-56 shrink-0 flex-col border-r border-line bg-surface md:flex">
       <SidebarContent loggedIn={loggedIn} logoutAction={logoutAction} />
     </nav>
   );
@@ -291,7 +313,7 @@ export function MobileMenu({
         aria-label="Open menu"
         aria-expanded={open}
         onClick={() => setOpen(true)}
-        className="flex size-11 items-center justify-center rounded-full border border-ink/10 bg-card text-ink transition-colors hover:border-ink/30 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        className="flex size-10 items-center justify-center rounded-control border border-line bg-surface text-ink transition-colors hover:border-line-strong focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         <MenuIcon />
       </button>
@@ -302,7 +324,7 @@ export function MobileMenu({
       >
         <div
           onClick={close}
-          className={`absolute inset-0 bg-ink/40 transition-opacity duration-200 ${
+          className={`absolute inset-0 bg-black/60 transition-opacity duration-200 ${
             open ? "opacity-100" : "opacity-0"
           }`}
         />
@@ -310,7 +332,7 @@ export function MobileMenu({
           role="dialog"
           aria-modal="true"
           aria-label="Menu"
-          className={`absolute left-0 top-0 h-full w-72 max-w-[82%] border-r border-ink/5 bg-surface shadow-xl transition-transform duration-200 ease-out ${
+          className={`absolute left-0 top-0 h-full w-72 max-w-[82%] border-r border-line bg-surface shadow-drawer transition-transform duration-200 ease-out ${
             open ? "translate-x-0" : "-translate-x-full"
           }`}
         >

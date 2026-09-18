@@ -88,3 +88,24 @@ export function deductionsCsv(deductions: DeductionExport[]): string {
     ])
   );
 }
+
+export type OtherIncomeExport = {
+  date: Date | null;
+  description: string;
+  category: string;
+  amount: number;
+  tax: number | null;
+};
+
+export function otherIncomeCsv(income: OtherIncomeExport[]): string {
+  return toCsv(
+    ["Date", "Source", "Category", "Amount", "Tax withheld"],
+    income.map((i) => [
+      isoDate(i.date),
+      i.description,
+      i.category,
+      money(i.amount),
+      money(i.tax),
+    ])
+  );
+}

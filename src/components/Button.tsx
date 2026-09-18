@@ -3,14 +3,19 @@ import Link from "next/link";
 type Variant = "primary" | "secondary" | "tertiary" | "danger";
 
 const variantClasses: Record<Variant, string> = {
-  primary: "bg-accent text-white hover:bg-accent/90",
-  secondary: "bg-ink text-white hover:bg-ink/85",
-  tertiary: "bg-card text-ink border border-ink/10 hover:border-ink/30",
-  danger: "bg-danger text-white hover:bg-danger/90",
+  primary: "bg-accent text-on-accent hover:bg-accent-hover",
+  secondary: "bg-inset text-ink border border-line hover:border-line-strong",
+  tertiary: "bg-surface text-ink border border-line hover:border-line-strong",
+  danger: "bg-danger text-white hover:opacity-90",
 };
 
 const baseClasses =
-  "inline-flex items-center justify-center gap-2 rounded-full px-6 py-3 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50 disabled:pointer-events-none";
+  "inline-flex items-center justify-center gap-2 rounded-control px-4 py-2.5 text-sm font-semibold transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent disabled:opacity-50 disabled:pointer-events-none";
+
+/** For plain <a> elements that must do a real navigation (file downloads). */
+export function buttonClasses(variant: Variant = "primary") {
+  return `${baseClasses} ${variantClasses[variant]}`;
+}
 
 type Props = {
   variant?: Variant;
@@ -22,7 +27,7 @@ type Props = {
 
 export function Arrow() {
   return (
-    <svg width="16" height="16" viewBox="0 0 16 16" fill="none" aria-hidden="true">
+    <svg width="14" height="14" viewBox="0 0 16 16" fill="none" aria-hidden="true">
       <path
         d="M2 8h11M9 3.5 13.5 8 9 12.5"
         stroke="currentColor"
@@ -34,7 +39,7 @@ export function Arrow() {
   );
 }
 
-export default function PillButton({
+export default function Button({
   variant = "primary",
   arrow = false,
   href,

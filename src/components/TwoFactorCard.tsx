@@ -3,13 +3,14 @@
 import { useActionState } from "react";
 import Card from "./Card";
 import Chip from "./Chip";
-import PillButton from "./PillButton";
+import Button from "./Button";
 import {
   start2faSetup,
   confirm2faSetup,
   disable2fa,
   type TwoFactorState,
 } from "@/lib/profile-actions";
+import { codeInputClasses, errorClasses, fieldClasses, labelClasses } from "./ui";
 
 export default function TwoFactorCard({ enabled }: { enabled: boolean }) {
   const [startState, startAction, startPending] = useActionState<
@@ -45,15 +46,15 @@ export default function TwoFactorCard({ enabled }: { enabled: boolean }) {
 
       {isEnabled ? (
         <form action={disable2fa} className="mt-5">
-          <PillButton type="submit" variant="secondary">
+          <Button type="submit" variant="secondary">
             Turn off two-step verification
-          </PillButton>
+          </Button>
         </form>
       ) : codeSent ? (
         <form action={confirmAction} className="mt-5 flex flex-col gap-4">
           <p className="text-sm text-ink">{startState?.sentInfo}</p>
-          <label className="flex flex-col gap-1.5">
-            <span className="pl-2 text-xs font-medium text-muted">
+          <label className={fieldClasses}>
+            <span className={labelClasses}>
               Enter the code to finish turning it on
             </span>
             <input
@@ -65,19 +66,19 @@ export default function TwoFactorCard({ enabled }: { enabled: boolean }) {
               maxLength={6}
               required
               placeholder="000000"
-              className="w-full max-w-56 rounded-full border border-ink/10 bg-card px-5 py-3 text-center text-lg font-bold tracking-[0.4em] text-ink placeholder:text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+              className={`${codeInputClasses} max-w-56`}
             />
           </label>
           {confirmState?.error && (
-            <p role="alert" className="pl-2 text-sm font-medium text-accent">
+            <p role="alert" className={errorClasses}>
               {confirmState.error}
             </p>
           )}
           <div className="flex flex-wrap gap-3">
-            <PillButton type="submit" disabled={confirmPending} arrow>
+            <Button type="submit" disabled={confirmPending}>
               {confirmPending ? "Checking…" : "Turn on"}
-            </PillButton>
-            <PillButton
+            </Button>
+            <Button
               type="submit"
               variant="tertiary"
               formAction={startAction}
@@ -85,19 +86,19 @@ export default function TwoFactorCard({ enabled }: { enabled: boolean }) {
               disabled={startPending}
             >
               {startPending ? "Sending…" : "Send a new code"}
-            </PillButton>
+            </Button>
           </div>
         </form>
       ) : (
         <form action={startAction} className="mt-5">
           {startState?.error && (
-            <p role="alert" className="mb-3 pl-2 text-sm font-medium text-accent">
+            <p role="alert" className={`mb-3 ${errorClasses}`}>
               {startState.error}
             </p>
           )}
-          <PillButton type="submit" disabled={startPending} arrow>
+          <Button type="submit" disabled={startPending}>
             {startPending ? "Sending code…" : "Turn on two-step verification"}
-          </PillButton>
+          </Button>
         </form>
       )}
     </Card>

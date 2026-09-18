@@ -6,6 +6,7 @@ import type { AmountField, ExtractedFields } from "@/lib/parser";
 import { centsToInput } from "@/lib/format";
 import AppShell from "@/components/AppShell";
 import Card from "@/components/Card";
+import PageHeader from "@/components/PageHeader";
 import ConfirmForm, { type ConfirmField } from "@/components/ConfirmForm";
 
 export default async function ConfirmPage({
@@ -57,15 +58,12 @@ export default async function ConfirmPage({
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-2xl py-6">
-        <Card>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">
-            Check the figures
-          </h1>
-          <p className="mt-1 mb-6 text-sm text-muted">
-            These values were read from your PDF. Fix anything that looks wrong
-            — blank fields are ones we could not find.
-          </p>
+      <div className="mx-auto max-w-2xl">
+        <PageHeader
+          title="Check the figures"
+          description="These values were read from your PDF. Fix anything that looks wrong — blank fields are ones we could not find."
+        />
+        <Card className="mt-6">
           <ConfirmForm
             fields={fields}
             confirmAction={confirmUpload.bind(null, pending.id)}

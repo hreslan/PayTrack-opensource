@@ -3,6 +3,7 @@ import { auth } from "@/lib/auth";
 import { prisma } from "@/lib/prisma";
 import AppShell from "@/components/AppShell";
 import Card from "@/components/Card";
+import PageHeader from "@/components/PageHeader";
 import ProfileForm from "@/components/ProfileForm";
 import TwoFactorCard from "@/components/TwoFactorCard";
 import DeleteAccountCard from "@/components/DeleteAccountCard";
@@ -25,12 +26,13 @@ export default async function ProfilePage() {
 
   return (
     <AppShell>
-      <div className="mx-auto max-w-xl py-6">
-        <Card>
-          <h1 className="text-2xl font-bold tracking-tight text-ink">Profile</h1>
-          <p className="mt-1 mb-6 text-sm text-muted">
-            Your name and photo, shown at the top of your dashboard.
-          </p>
+      <div className="mx-auto max-w-2xl">
+        <PageHeader
+          title="Profile"
+          description="Your account details, sign-in security and data controls."
+        />
+        <Card className="mt-6">
+          <h2 className="mb-5 text-sm font-semibold text-ink">Account details</h2>
           <ProfileForm
             initialName={user.displayName ?? ""}
             initialAvatar={user.avatar}

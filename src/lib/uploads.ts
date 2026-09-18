@@ -6,6 +6,10 @@ import { prisma } from "./prisma";
 // 1 hour: they are removed on confirm, cancel, or expiry cleanup.
 export const UPLOAD_DIR = path.join(process.cwd(), ".uploads");
 
+// Permanent storage for receipts the user chose to keep, outside public/.
+// Files here live until the owning Deduction is deleted.
+export const RECEIPT_DIR = path.join(process.cwd(), ".receipts");
+
 export async function removeFileQuietly(filePath: string) {
   try {
     await fs.unlink(filePath);

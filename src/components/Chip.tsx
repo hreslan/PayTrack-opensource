@@ -1,28 +1,25 @@
+type Tone = "neutral" | "accent" | "positive";
+
+const toneClasses: Record<Tone, string> = {
+  neutral: "border-line bg-inset text-ink-soft",
+  accent: "border-accent/30 bg-accent-soft text-accent",
+  positive: "border-positive/30 bg-positive-soft text-positive",
+};
+
 export default function Chip({
   children,
-  caret = false,
+  tone = "neutral",
   className = "",
 }: {
   children: React.ReactNode;
-  caret?: boolean;
+  tone?: Tone;
   className?: string;
 }) {
   return (
     <span
-      className={`inline-flex items-center gap-1.5 rounded-full border border-ink/10 bg-card px-3 py-1.5 text-xs font-medium text-ink ${className}`}
+      className={`inline-flex items-center gap-1.5 rounded-badge border px-2 py-0.5 text-xs font-medium ${toneClasses[tone]} ${className}`}
     >
       {children}
-      {caret && (
-        <svg width="10" height="10" viewBox="0 0 10 10" fill="none" aria-hidden="true">
-          <path
-            d="M2 3.5 5 6.5 8 3.5"
-            stroke="currentColor"
-            strokeWidth="1.4"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-          />
-        </svg>
-      )}
     </span>
   );
 }

@@ -22,11 +22,30 @@ model User {
   pending          PendingUpload[]
   verificationCodes VerificationCode[]
   deductions       Deduction[]
+  otherIncome      OtherIncome[]
 }
 
-// A tax deduction claimed from a receipt. Only these extracted fields are
-// kept — the receipt file itself is parsed in memory and never stored.
+// A tax deduction claimed from a receipt. The receipt file is parsed in
+// memory and discarded unless the user opts to keep a copy, in which case
+// receiptPath points at it under .receipts/ so it can be downloaded later.
 model Deduction {
+  id              String    @id @default(cuid())
+  userId          String
+  user            User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  date            DateTime?
+  description     String
+  category        String
+  amount          Int // cents
+  receiptPath     String?
+  receiptFileName String?
+  createdAt       DateTime  @default(now())
+
+  @@index([userId])
+}
+
+// Income that never appeared on a payslip — bank interest, dividends, ABN
+// work and so on. It adds to taxable income in the tax return estimate.
+model OtherIncome {
   id          String    @id @default(cuid())
   userId      String
   user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
@@ -34,6 +53,7 @@ model Deduction {
   description String
   category    String
   amount      Int // cents
+  tax         Int? // cents withheld/paid on this income, if any (e.g. PAYG on ABN work)
   createdAt   DateTime  @default(now())
 
   @@index([userId])
